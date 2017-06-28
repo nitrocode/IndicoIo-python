@@ -1,6 +1,7 @@
 from functools import wraps, partial
 import warnings
 
+
 Version, version, __version__, VERSION = ('1.1.2',) * 4
 
 
