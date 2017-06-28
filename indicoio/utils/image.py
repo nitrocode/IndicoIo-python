@@ -18,7 +18,7 @@ def file_exists(filename):
     """
     try:
         return os.path.isfile(filename)
-    except (UnicodeDecodeError, UnicodeEncodeError):
+    except (UnicodeDecodeError, UnicodeEncodeError, ValueError):
         return False
 
 
