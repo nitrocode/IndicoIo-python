@@ -1,6 +1,7 @@
 from ..utils.api import api_handler
-from ..utils.image import image_preprocess
+from ..utils.preprocessing import data_preprocess
 from ..utils.decorators import detect_batch_decorator
+
 
 @detect_batch_decorator
 def content_filtering(image, cloud=None, batch=False, api_key=None, version=None, **kwargs):
@@ -23,6 +24,6 @@ def content_filtering(image, cloud=None, batch=False, api_key=None, version=None
     :type image: list of lists
     :rtype: float of nsfwness
     """
-    image = image_preprocess(image, batch=batch, size=128, min_axis=True)
+    image = data_preprocess(image, batch=batch, size=128, min_axis=True)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
     return api_handler(image, cloud=cloud, api="contentfiltering", url_params=url_params, **kwargs)

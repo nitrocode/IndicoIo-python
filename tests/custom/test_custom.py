@@ -170,3 +170,9 @@ class CustomAPIsTestCase(unittest.TestCase):
         # collection is now accessible via the alternate name
         new_collection.info()
         new_collection.clear()
+
+    def test_large_add_data(self):
+        collection = Collection(collection_name)
+        results = collection.add_data(test_data*50, batch_size=50)
+        self.assertTrue(all([result is True for result in results]))
+

@@ -71,3 +71,6 @@ v1.0.8 Tue Feb 07 -- Fix unicode encoding/decoding exception
 v1.0.9 Wed June 28 -- Fix path check on windows
 v1.1.0 Tue July 25 -- Add docx extraction API
 v1.1.1 Wednesday July 26 -- Hotfix: Add docx module to setup
+
+2018
+v1.1.2 Thursday March 29th -- Explanation visualization + improved error messages

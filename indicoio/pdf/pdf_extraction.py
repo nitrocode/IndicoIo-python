@@ -7,7 +7,7 @@ def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **k
     """
     Given a pdf, returns the text and metadata associated with the given pdf.
     PDFs may be provided as base64 encoded data or as a filepath.
-    Base64 image data and formatted table is optionally returned by setting 
+    Base64 image data and formatted table is optionally returned by setting
     `images=True` or `tables=True`.
 
     Example usage:
@@ -26,7 +26,10 @@ def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **k
     pdf = pdf_preprocess(pdf, batch=batch)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
     results = api_handler(pdf, cloud=cloud, api="pdfextraction", url_params=url_params, **kwargs)
-    image_results = results.get('images')
-    if image_results is not None:
-        results['images'] = postprocess_images(image_results)
+
+    if batch:
+        for result in results:
+            result["images"] = postprocess_images(result.get("images", []))
+    else:
+        results['images'] = postprocess_images(results.get("images", []))
     return results

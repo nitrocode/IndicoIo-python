@@ -17,16 +17,3 @@ class OrganizationsTest(TextTest):
         self.assertTrue(isinstance(response, list))
         sorted_response = [sorted(arr, key=lambda x: x['confidence'], reverse=True) for arr in response]
         self.assertTrue('ISIS' in [result["text"] for result in sorted_response[0]])
-
-    def test_organizations_v1(self):
-        test_data = "A year ago, the New York Times published confidential comments about ISIS' ideology by Major General Michael K. Nagata, then U.S. Special Operations commander in the Middle East."
-        response = organizations(test_data, version=1)
-        self.assertTrue(isinstance(response, list))
-        sorted_response = sorted(response, key=lambda x: x['confidence'], reverse=True)
-        self.assertTrue('ISIS' in sorted_response[0]['text'])
-
-        test_data = [test_data] * 2
-        response = organizations(test_data, version=1)
-        self.assertTrue(isinstance(response, list))
-        sorted_response = [sorted(arr, key=lambda x: x['confidence'], reverse=True) for arr in response]
-        self.assertTrue('ISIS' in sorted_response[0][0]['text'])

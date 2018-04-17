@@ -80,7 +80,11 @@ def collect_api_results(input_data, url, headers, api, batch_size, kwargs):
         results = []
         for batch in batched(input_data, size=batch_size):
             try:
-                results.extend(send_request(batch, api, url, headers, kwargs))
+                result = send_request(batch, api, url, headers, kwargs)
+                if isinstance(result, list):
+                    results.extend(result)
+                else:
+                    results.append(result)
             except IndicoError as e:
                 # Log results so far to file
                 timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
@@ -115,7 +119,7 @@ def send_request(input_data, api, url, headers, kwargs):
     data.update(**kwargs)
     json_data = json.dumps(data)
 
-    response = requests.post(url, data=json_data, headers=headers)
+    response = requests.post(url, data=json_data, headers=headers, verify=False)
 
     warning = response.headers.get('x-warning')
     if warning:

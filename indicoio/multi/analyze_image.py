@@ -1,6 +1,6 @@
 from .utils import multi, MULTIAPI_NOT_SUPPORTED
 from ..image import IMAGE_APIS
-from ..utils.image import image_preprocess
+from ..utils.preprocessing import data_preprocess
 from ..utils.decorators import detect_batch_decorator
 
 DEFAULT_APIS = list(set(IMAGE_APIS.keys()) - set(MULTIAPI_NOT_SUPPORTED))
@@ -33,7 +33,7 @@ def analyze_image(image, apis=DEFAULT_APIS, **kwargs):
     api_key = kwargs.pop('api_key', None)
 
     return multi(
-        data=image_preprocess(image, batch=batch),
+        data=data_preprocess(image, batch=batch),
         datatype="image",
         cloud=cloud,
         batch=batch,

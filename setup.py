@@ -1,15 +1,32 @@
 """
 Setup for indico apis
 """
+import sys
+
+PY2 = True if sys.version_info[0] == 2 else False
+PY3 = not PY2
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
+
+REQUIREMENTS = [
+    "requests >= 1.2.3",
+    "six >= 1.3.0",
+    "pillow >= 2.8.1"
+]
+
+# shim for futures support
+if PY2:
+    REQUIREMENTS.append(
+        "futures >= 3.0.0"
+    )
+
 setup(
     name="IndicoIo",
-    version="1.1.1",
+    version="1.1.2",
     packages=[
         "indicoio",
         "indicoio.text",
@@ -45,11 +62,10 @@ setup(
         "six >= 1.3.0",
         "pillow >= 2.8.1"
     ],
-    install_requires=[
-        "requests >= 1.2.3",
-        "six >= 1.3.0",
-        "pillow >= 2.8.1",
+    tests_require=[
         "mock >= 1.3.0, < 2.0.0",
-        "futures >= 3.0.0"
-    ]
+        "nose >= 1.0"
+    ],
+    test_suite="nose.collector",
+    install_requires=REQUIREMENTS
 )

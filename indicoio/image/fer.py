@@ -1,5 +1,5 @@
 from ..utils.api import api_handler
-from ..utils.image import image_preprocess
+from ..utils.preprocessing import data_preprocess
 from ..utils.decorators import detect_batch_decorator
 
 
@@ -28,7 +28,7 @@ def fer(image, cloud=None, batch=False, api_key=None, version=None, **kwargs):
     :rtype: Dictionary containing emotion probability pairs
     """
 
-    image = image_preprocess(image, batch=batch,
+    image = data_preprocess(image, batch=batch,
         size=None if kwargs.get("detect") else (48, 48)
     )
 

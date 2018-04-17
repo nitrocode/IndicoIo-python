@@ -1,4 +1,4 @@
-from ..utils.image import image_preprocess
+from ..utils.preprocessing import data_preprocess
 from ..utils.api import api_handler
 from ..utils.decorators import detect_batch_decorator
 
@@ -26,6 +26,6 @@ def facial_localization(image, cloud=None, batch=False, api_key=None, version=No
     :type image: filepath or ndarray
     :rtype: List of faces (dict) found.
     """
-    image = image_preprocess(image, batch=batch)
+    image = data_preprocess(image, batch=batch)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
     return api_handler(image, cloud=cloud, api="faciallocalization", url_params=url_params, **kwargs)
