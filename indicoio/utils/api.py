@@ -9,15 +9,27 @@ from itertools import islice, chain
 import os.path
 import datetime
 
+
 try:
     from urllib import urlencode
     from urlparse import urlparse
 except: # For Python 3:
     from urllib.parse import urlencode, urlparse
+import msgpack
+import msgpack_numpy as m
+m.patch()
 
 from indicoio.utils.errors import IndicoError
 from indicoio import JSON_HEADERS
 from indicoio import config
+
+
+
+def convert(data):
+    if isinstance(data, bytes):  return data.decode('utf-8', 'ignore')
+    if isinstance(data, dict):   return dict(map(convert, data.items()))
+    if isinstance(data, tuple):  return map(convert, data)
+    return data
 
 
 def batched(iterable, size):
@@ -129,7 +141,17 @@ def send_request(input_data, api, url, headers, kwargs):
     if response.status_code == 503 and not cloud.endswith('.indico.io'):
         raise IndicoError("Private cloud '%s' does not include api '%s'" % (cloud, api))
 
-    json_results = response.json()
+    if kwargs.get("serializer") == 'msgpack':
+        try:
+            json_results = msgpack.unpackb(response.content, encoding='utf-8')
+        except msgpack.exceptions.UnpackException:
+            json_results = response.json()
+    else:
+        json_results = response.json()
+
+    if config.PY3:
+        json_results = convert(json_results)
+
     results = json_results.get('results', False)
     if results is False:
         error = json_results.get('error')

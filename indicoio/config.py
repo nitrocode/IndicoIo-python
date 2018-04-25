@@ -1,8 +1,14 @@
 import os
+import sys
 try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+
+PY2 = True if sys.version_info[0] == 2 else False
+PY3 = not PY2
+
 
 class Settings(configparser.ConfigParser):
 
