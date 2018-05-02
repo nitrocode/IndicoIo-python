@@ -75,3 +75,4 @@ v1.1.1 Wednesday July 26 -- Hotfix: Add docx module to setup
 2018
 v1.1.2 Thursday March 29th -- Explanation visualization + improved error messages
 v1.1.3 Tuesday April 17th -- verify=True
+v1.1.4 Wed May 2nd -- msgpack support

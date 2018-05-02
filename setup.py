@@ -28,7 +28,7 @@ if PY2:
 
 setup(
     name="IndicoIo",
-    version="1.1.3",
+    version="1.1.4",
     packages=[
         "indicoio",
         "indicoio.text",
