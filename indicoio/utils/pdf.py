@@ -36,7 +36,9 @@ def postprocess_image(image):
             data = b64decode(raw_data)
             return Image.open(StringIO(data))
         elif (sys.version_info >= (3, 0)):
-            data = base64.decodestring(bytes(raw_data, 'utf-8'))
+            if not isinstance(raw_data, bytes):
+                raw_data = bytes(raw_data, 'utf-8')
+            data = base64.decodestring(raw_data)
             return Image.open(BytesIO(data))
         else:
             raise AssertionError("Unsupport python version: {version}".format(

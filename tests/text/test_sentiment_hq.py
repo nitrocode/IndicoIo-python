@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import numpy as np
 
 from indicoio import sentiment_hq
 from .indico_text_base import TextTest
@@ -17,10 +17,10 @@ class SentimentHQTest(TextTest):
         test_string = "Worst song ever."
         response = sentiment_hq(test_string)
 
-        self.assertTrue(isinstance(response, float))
+        self.assertTrue(isinstance(response, (float, np.float32)))
         self.assertTrue(response < 0.5)
 
         test_string = "Best song ever."
         response = sentiment_hq(test_string)
-        self.assertTrue(isinstance(response, float))
+        self.assertTrue(isinstance(response, (float, np.float32)))
         self.assertTrue(response > 0.5)

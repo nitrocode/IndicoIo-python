@@ -3,32 +3,34 @@ Handles making requests to the IndicoApi Server
 """
 import sys
 import json
-import requests
 import warnings
 from itertools import islice, chain
 import os.path
 import datetime
-
 
 try:
     from urllib import urlencode
     from urlparse import urlparse
 except: # For Python 3:
     from urllib.parse import urlencode, urlparse
+
+
+import requests
 import msgpack
 import msgpack_numpy as m
 m.patch()
 
 from indicoio.utils.errors import IndicoError
+from indicoio.utils.encoder import NumpyEncoder
 from indicoio import JSON_HEADERS
 from indicoio import config
-
 
 
 def convert(data):
     if isinstance(data, bytes):  return data.decode('utf-8', 'ignore')
     if isinstance(data, dict):   return dict(map(convert, data.items()))
     if isinstance(data, tuple):  return map(convert, data)
+    if isinstance(data, list): return list(map(convert, data))
     return data
 
 
@@ -105,9 +107,9 @@ def collect_api_results(input_data, url, headers, api, batch_size, kwargs):
                     timestamp=timestamp
                 )
                 if sys.version_info > (3, 0):
-                    json.dump(results, open(filename, mode='w', encoding='utf-8'))
+                    json.dump(results, open(filename, mode='w', encoding='utf-8'), cls=NumpyEncoder)
                 else:
-                    json.dump(results, open(filename, mode='w'))
+                    json.dump(results, open(filename, mode='w'), cls=NumpyEncoder)
                 raise IndicoError(
                     "The following error occurred while processing your data: `{err}` "
                     "Partial results have been saved to {filename}".format(
@@ -128,7 +130,12 @@ def send_request(input_data, api, url, headers, kwargs):
     if input_data != None:
         data['data'] = input_data
 
+    # request that the API respond with a msgpack encoded result
+    serializer = kwargs.pop("serializer", config.serializer)
+    data['serializer'] = serializer
+
     data.update(**kwargs)
+
     json_data = json.dumps(data)
 
     response = requests.post(url, data=json_data, headers=headers)
@@ -141,7 +148,7 @@ def send_request(input_data, api, url, headers, kwargs):
     if response.status_code == 503 and not cloud.endswith('.indico.io'):
         raise IndicoError("Private cloud '%s' does not include api '%s'" % (cloud, api))
 
-    if kwargs.get("serializer") == 'msgpack':
+    if serializer == 'msgpack':
         try:
             json_results = msgpack.unpackb(response.content, encoding='utf-8')
         except msgpack.exceptions.UnpackException:

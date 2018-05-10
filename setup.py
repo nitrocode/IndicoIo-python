@@ -17,6 +17,7 @@ REQUIREMENTS = [
     "six >= 1.3.0",
     "pillow >= 2.8.1",
     "msgpack >= 0.5.6",
+    "numpy >= 1.14.1",
     "msgpack-numpy >= 0.4.1"
 ]
 
@@ -28,7 +29,7 @@ if PY2:
 
 setup(
     name="IndicoIo",
-    version="1.1.4",
+    version="1.1.5",
     packages=[
         "indicoio",
         "indicoio.text",

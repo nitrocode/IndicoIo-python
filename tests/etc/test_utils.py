@@ -1,4 +1,5 @@
 from mock import patch, MagicMock
+import msgpack
 
 from indicoio.utils import is_url
 
@@ -6,8 +7,10 @@ mock_response = MagicMock()
 mock_response.headers = {
     'x-warning': 'testing warning'
 }
+results = {'results': 0.5}
 mock_response.status_code = 200
-mock_response.json = MagicMock(return_value={'results': 0.5})
+mock_response.json = MagicMock(return_value=results)
+mock_response.content = msgpack.packb(results)
 
 def test_is_urls():
     boring_image = [0]*(32**2)
@@ -35,5 +38,8 @@ def test_local_host(mock_warning):
     from indicoio.utils.api import api_handler
     import indicoio
     indicoio.config.host = "localhost:8000"
-    api_handler("test", cloud=None, api='sentiment')
-    indicoio.config.host = "apiv2.indico.io"
+
+    try:
+        api_handler("test", cloud=None, api='sentiment')
+    finally:
+        indicoio.config.host = "apiv2.indico.io"

@@ -67,3 +67,4 @@ api_key = SETTINGS.api_key()
 cloud = SETTINGS.cloud()
 host = 'apiv2.indico.io'
 url_protocol = "https"
+serializer = "msgpack"

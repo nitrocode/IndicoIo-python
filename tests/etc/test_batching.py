@@ -1,7 +1,12 @@
 import unittest
-import glob, os, json
+import glob
+import os
+import json
+
+import numpy as np
 
 from indicoio import config, sentiment_hq, IndicoError
+
 
 class TestBatchSize(unittest.TestCase):
     def setUp(self):
@@ -14,7 +19,7 @@ class TestBatchSize(unittest.TestCase):
         test_data = ["Terribly interesting test data."] * 100
         response = sentiment_hq(test_data, batch_size=20)
         self.assertTrue(isinstance(response, list))
-        self.assertTrue(all([isinstance(el, float) for el in response]))
+        self.assertTrue(all([isinstance(el, (float, np.float32)) for el in response]))
 
     def test_batched_error_handling(self):
         test_data = ["Terribly interesting test data."] * 100
