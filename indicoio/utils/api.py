@@ -20,8 +20,8 @@ import msgpack
 import msgpack_numpy as m
 m.patch()
 
-from indicoio.utils.errors import IndicoError
 from indicoio.utils.encoder import NumpyEncoder
+from indicoio.utils.errors import convert_to_py_error, IndicoError
 from indicoio import JSON_HEADERS
 from indicoio import config
 
@@ -162,7 +162,7 @@ def send_request(input_data, api, url, headers, kwargs):
     results = json_results.get('results', False)
     if results is False:
         error = json_results.get('error')
-        raise IndicoError(error)
+        raise convert_to_py_error(error)
     return results
 
 
