@@ -18,5 +18,10 @@ from .pdf import *
 from .docx import *
 
 from indicoio.utils.errors import (
-    IndicoError, InvalidAPIKey, MissingAPIKey, MalformattedData
+    IndicoError,
+    InvalidAPIKey,
+    MissingAPIKey,
+    MalformattedData,
+    BatchProcessingError,
+    APIDoesNotExist
 )

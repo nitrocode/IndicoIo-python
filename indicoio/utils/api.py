@@ -21,7 +21,9 @@ import msgpack_numpy as m
 m.patch()
 
 from indicoio.utils.encoder import NumpyEncoder
-from indicoio.utils.errors import convert_to_py_error, IndicoError
+from indicoio.utils.errors import (
+    convert_to_py_error, IndicoError, BatchProcessingError, APIDoesNotExist
+)
 from indicoio import JSON_HEADERS
 from indicoio import config
 
@@ -110,7 +112,7 @@ def collect_api_results(input_data, url, headers, api, batch_size, kwargs):
                     json.dump(results, open(filename, mode='w', encoding='utf-8'), cls=NumpyEncoder)
                 else:
                     json.dump(results, open(filename, mode='w'), cls=NumpyEncoder)
-                raise IndicoError(
+                raise BatchProcessingError(
                     "The following error occurred while processing your data: `{err}` "
                     "Partial results have been saved to {filename}".format(
                         err=e,
@@ -146,7 +148,7 @@ def send_request(input_data, api, url, headers, kwargs):
 
     cloud = urlparse(url).hostname
     if response.status_code == 503 and not cloud.endswith('.indico.io'):
-        raise IndicoError("Private cloud '%s' does not include api '%s'" % (cloud, api))
+        raise APIDoesNotExist("Private cloud '%s' does not include api '%s'" % (cloud, api))
 
     if serializer == 'msgpack':
         try:

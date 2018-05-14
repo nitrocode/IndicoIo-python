@@ -21,6 +21,14 @@ class MalformattedData(IndicoError):
     pass
 
 
+class APIDoesNotExist(IndicoError):
+    pass
+
+
+class BatchProcessingError(IndicoError):
+    pass
+
+
 class DataStructureException(Exception):
     """
     If a non-accepted datastructure is passed, throws an exception
