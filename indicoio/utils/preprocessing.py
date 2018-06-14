@@ -30,6 +30,11 @@ def data_preprocess(data, size=None, min_axis=None, batch=False):
     if batch:
         return [data_preprocess(el, size=size, min_axis=min_axis, batch=False) for el in data]
 
+    if isinstance(data, dict):
+        return {
+            key: data_preprocess(value, size=size, min_axis=min_axis, batch=False)
+            for key, value in data.items()
+        }
     if isinstance(data, string_types):
         if file_exists(data):
             # probably a path to an image
