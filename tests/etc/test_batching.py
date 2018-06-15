@@ -36,7 +36,7 @@ class TestBatchSize(unittest.TestCase):
             try:
                 # first four batches should have returned
                 assert len(data) == 80
-            except e:
+            except Exception as e:
                 raise e
             finally:
                 # clean up after ourselves
