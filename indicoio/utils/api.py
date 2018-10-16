@@ -71,7 +71,7 @@ def api_handler(input_data, cloud, api, url_params=None, batch_size=None, **kwar
 
     cloud = cloud or config.cloud
     host = "%s.indico.domains" % cloud if cloud else config.host
-
+    host = "apiv2.dev.indico.domains"
     # LOCAL DEPLOYMENTS
     if not (host.endswith('indico.domains') or host.endswith('indico.io')):
         url_protocol = "http"
