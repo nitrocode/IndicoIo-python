@@ -152,8 +152,8 @@ def send_request(input_data, api, url, headers, kwargs):
 
     if serializer == 'msgpack':
         try:
-            json_results = msgpack.unpackb(response.content, encoding='utf-8')
-        except msgpack.exceptions.UnpackException:
+            json_results = msgpack.unpackb(response.content, encoding='latin-1')
+        except (msgpack.exceptions.UnpackException):
             json_results = response.json()
     else:
         json_results = response.json()
