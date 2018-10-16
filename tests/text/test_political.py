@@ -15,7 +15,7 @@ POLITICAL_SET = set(['Libertarian', 'Liberal', 'Conservative', 'Green'])
 class PoliticalTest(TextTest):
 
     def test_batch_political(self):
-        response = political([TEST_DATA], version=1)
+        response = political([TEST_DATA], version=2)
         self.assertTrue(isinstance(response, list))
 
     def test_political(self):
@@ -25,7 +25,7 @@ class PoliticalTest(TextTest):
         self.assertEqual(POLITICAL_SET, set(response.keys()))
 
         test_string = "pro-choice"
-        response = political(test_string, version=1)
+        response = political(test_string, version=2)
 
         self.assertTrue(isinstance(response, dict))
         assert response['Libertarian'] > 0.25
