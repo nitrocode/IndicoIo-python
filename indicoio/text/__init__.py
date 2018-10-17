@@ -26,7 +26,6 @@ TEXT_APIS = {
     "personas": personas,
     "relevance": relevance,
     "text_features": text_features,
-    "keywords": keywords,
     "people": people,
     "places": places,
     "sentiment": sentiment,
