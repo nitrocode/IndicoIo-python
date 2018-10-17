@@ -61,13 +61,13 @@ class FERTest(ImageTest):
 
     def test_batch_fer_filepath(self):
         test_data = [os.path.normpath(os.path.join(DIR, "data/fear.png"))]
-        response = fer(test_data)
+        response = fer(test_data, sensitivity=.95)
         self.assertTrue(isinstance(response, list))
         self.assertTrue(isinstance(response[0], dict))
 
     def test_fer_detect(self):
         test_data = os.path.normpath(os.path.join(DIR, "data/fear.png"))
-        response = fer(test_data, detect=True)
+        response = fer(test_data, detect=True, sensitivity=.2)
         self.assertIsInstance(response, list)
         self.assertEqual(len(response), 1)
         self.assertIn("location", response[0])
