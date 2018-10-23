@@ -15,4 +15,4 @@ class ResizeTests(ImageTest):
         resized_image = data_preprocess(test_image, size=360, min_axis=True)
         image_string = BytesIO(base64.b64decode(resized_image))
         image = Image.open(image_string)
-        self.assertEqual(image.size, (360.0, 360.0))
+        self.assertEqual(image.size, (540, 360))
