@@ -35,10 +35,10 @@ class AnalyzeTextTest(MultiTest):
         self.assertRaises(IndicoError,
                             analyze_text,
                             "this shouldn't work",
-                            apis=["fer", "sentiment", "facial_features"])
+                            apis=["fer", "sentiment"])
 
     def test_batch_multi_bad_mixed_api(self):
         self.assertRaises(IndicoError,
                             analyze_text,
                         ["this shouldn't work"],
-                        apis=["fer", "sentiment", "facial_features"])
+                        apis=["fer", "sentiment"])

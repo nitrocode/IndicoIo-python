@@ -5,7 +5,16 @@ from indicoio.custom import Collection, collections
 
 collection_name = "__test_python_text__"
 alternate_name = "__alt_test_python_text__"
-test_data = [['input 1', 'label 1'], ['input 2', 'label 2'], ['input 3', 'label 3'], ['input 4', 'label 4']]
+test_data = [
+    ['input 1', 'label 1'],
+    ['input 11', 'label 1'],
+    ['input 2', 'label 2'],
+    ['input 22', 'label 2'],
+    ['input 3', 'label 3'],
+    ['input 33', 'label 3'],
+    ['input 4', 'label 4'],
+    ['input 44', 'label 4']
+]
 
 image_collection_name = "__test_python_image__"
 image_test_data = [

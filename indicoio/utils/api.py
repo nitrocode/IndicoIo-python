@@ -150,13 +150,17 @@ def send_request(input_data, api, url, headers, kwargs):
     if response.status_code == 503 and not cloud.endswith('.indico.io'):
         raise APIDoesNotExist("Private cloud '%s' does not include api '%s'" % (cloud, api))
 
-    if serializer == 'msgpack':
-        try:
-            json_results = msgpack.unpackb(response.content, encoding='utf-8')
-        except msgpack.exceptions.UnpackException:
+    try:
+        if serializer == 'msgpack':
+            json_results = msgpack.unpackb(response.content)
+        else:
             json_results = response.json()
-    else:
-        json_results = response.json()
+    except (msgpack.exceptions.UnpackException, msgpack.exceptions.ExtraData):
+        try:
+            json_results = response.json()
+        except:
+            json_results = {"error": response.text}
+
 
     if config.PY3:
         json_results = convert(json_results)

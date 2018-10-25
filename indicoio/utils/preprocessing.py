@@ -50,7 +50,7 @@ def data_preprocess(data, size=None, min_axis=None, batch=False):
             data *= 255.
         try:
             preprocessed = Image.fromarray(data.astype("uint8"))
-        except TypeError as e:
+        except TypeError:
             raise IndicoError(
                 "Please ensure the numpy array is in a format by PIL. "
                 "Values must be between 0 and 1 or between 0 and 255 in greyscale, rgb, or rgba format."
