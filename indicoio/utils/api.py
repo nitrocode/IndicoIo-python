@@ -155,7 +155,7 @@ def send_request(input_data, api, url, headers, kwargs):
             json_results = msgpack.unpackb(response.content)
         else:
             json_results = response.json()
-    except (msgpack.exceptions.UnpackException,msgpack.exceptions.ExtraData):
+    except (msgpack.exceptions.UnpackException, msgpack.exceptions.ExtraData):
         try:
             json_results = response.json()
         except:
