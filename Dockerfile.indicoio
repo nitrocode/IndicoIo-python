@@ -1,0 +1,17 @@
+FROM python
+
+ARG INDICO_API_KEY
+
+RUN apt-get update && \
+  apt-get -y upgrade && \
+  pip install indicoio && \
+  pip install nose && \
+  mkdir /app
+
+COPY . /app/
+
+WORKDIR /app
+
+RUN pip install -r requirements.txt
+
+ENV INDICO_API_KEY=$INDICO_API_KEY
