@@ -241,6 +241,7 @@ class CustomAPIsImageTestCase(CustomAPITestBase):
         )
         collection.train()
         collection.wait()
+
         result = collection.predict(
             {
                 "jd_title": "Field Engineer",
@@ -251,4 +252,24 @@ class CustomAPIsImageTestCase(CustomAPITestBase):
             top_n=1,
         )
         assert "no" in result.keys()
+
+    def test_multilabel_sequence_model(self):
+        import indicoio
+
+        indicoio.config.host = "localhost:8001"
+        collection = Collection(sequence_collection_name)
+        collection.add_data(
+            [
+                ["Color: red", [{"start": 7, "end": 10, "label": "color"}]],
+                ["Color: blue", [{"start": 7, "end": 11, "label": "color"}]],
+                ["Color: green", [{"start": 7, "end": 12, "label": "color"}]],
+                ["Color: yellow", [{"start": 7, "end": 13, "label": "color"}]],
+            ]
+            * 5
+        )
+        collection.train(model_version="multilabel_v1", timeout=30)
+        collection.wait()
+        result = collection.predict("Color: purple")
+        assert len(result) == 1.0
+        assert result[0]["text"] == "purple"
 
