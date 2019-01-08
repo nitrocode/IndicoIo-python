@@ -17,6 +17,17 @@ git clone https://github.com/IndicoDataSolutions/IndicoIo-python.git
 python setup.py install
 ```
 
+Running in a Docker container:
+```
+git clone https://github.com/IndicoDataSolutions/IndicoIo-python.git
+docker build --build-arg INDICO_API_KEY=<Your Indico API key here> \
+  -f Dockerfile.indicoio \
+  -t indicoio
+docker run -it indicoio bash
+```
+
+After building the Docker container, you can use only the last command to run the library unless you need to update the code.
+
 Having trouble with installation? Missing system dependencies? Check out our [complete installation guide](https://indico.io/blog/getting-started-indico-tutorial-for-beginning-programmers/).
 
 
@@ -40,4 +51,3 @@ Full Documentation
 Detailed documentation and further code examples are available at [indico.io/docs](https://indico.io/docs).
 
 ![Happy hacking](http://i.imgur.com/W9ZcOe0.gif)
-
