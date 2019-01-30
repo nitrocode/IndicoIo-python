@@ -2,7 +2,7 @@ import unittest
 import uuid
 
 from indicoio.utils.errors import IndicoError
-from indicoio.custom import Collection, collections
+from indicoio.custom import Collection, collections, vectorize
 
 TEST_DATA = [
     ["input 1", "label 1"],
@@ -80,6 +80,22 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
     def test_add_predict(self):
         result = self.collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
+
+    def test_add_predict_tfidf(self):
+        collection = Collection(collection_name)
+        collection.add_data(test_data, save_for_explanations=True)
+        collection.train(model_type='tfidf')
+        collection.wait()
+        result = collection.predict(test_data[0][0])
+        assert test_data[0][1] in result.keys()
+        collection.explain(test_data[0][0], sequence_features=True)
+
+    def test_vectorize(self):
+        joinedtoken = 'awkwardjoin'
+        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.
+        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.
+        assert sum(vectorize(joinedtoken, subtokens=False, domain='finance')) == 0.
+        assert sum(vectorize(joinedtoken, subtokens=True, domain='finance')) != 0.
 
     def test_list_collection(self):
         assert collections()[self.collection_name]
