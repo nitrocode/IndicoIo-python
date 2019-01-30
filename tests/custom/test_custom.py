@@ -85,6 +85,18 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
         collection = Collection(self.collection_name)
         collection.add_data(self.test_data, save_for_explanations=True)
         collection.train(model_type="tfidf")
+
+    def test_vectorize(self):
+        joinedtoken = "awkwardjoin"
+        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
+        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
+
+    def test_list_collection(self):
+        collection = Collection(collection_name)
+        collection.add_data(test_data)
+        collection.train()
         collection.wait()
         result = collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
