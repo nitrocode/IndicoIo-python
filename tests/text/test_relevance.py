@@ -4,6 +4,7 @@
 
 from indicoio import relevance
 from .indico_text_base import TextTest
+import numpy as np
 
 class RelevanceTest(TextTest):
 
@@ -11,7 +12,7 @@ class RelevanceTest(TextTest):
         test_data = 'president'
         test_query = ['president', "prime minister"]
         response = relevance(test_data, test_query)
-        self.assertTrue(isinstance(response, list))
+        self.assertTrue(isinstance(response, np.ndarray))
         self.assertTrue(response[0] > 0.5)
         self.assertTrue(response[1] > 0.2)
         self.assertEqual(len(response), 2)
@@ -20,7 +21,7 @@ class RelevanceTest(TextTest):
         test_data = ['president', 'president']
         test_query = ['president', "prime minister"]
         response = relevance(test_data, test_query)
-        self.assertTrue(isinstance(response, list))
+        self.assertTrue(isinstance(response, np.ndarray))
         self.assertTrue(response[0][0] > 0.5)
         self.assertTrue(response[0][1] > 0.2)
         self.assertEqual(len(response), 2)
