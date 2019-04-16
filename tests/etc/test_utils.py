@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from mock import patch, MagicMock
 import msgpack
 
 from indicoio.utils import is_url

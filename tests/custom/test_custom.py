@@ -31,8 +31,8 @@ class CustomAPITestBase(unittest.TestCase):
 
     def setUp(self):
         self.uuid = uuid.uuid1()
-        self.collection_name = f"__test_python___{ self.uuid }__"
-        self.alternate_name = f"__alternate{ self.collection_name }"
+        self.collection_name = "__test_python___{}__".format(self.uuid)
+        self.alternate_name = "__alternate{}".format(self.collection_name)
 
         self.collection = Collection(self.collection_name)
         assert self.test_data is not None
@@ -41,7 +41,7 @@ class CustomAPITestBase(unittest.TestCase):
         self.collection.train()
         self.collection.wait()
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         for cn in [self.collection_name, self.alternate_name]:
             self._clean_collection(cn)
 
