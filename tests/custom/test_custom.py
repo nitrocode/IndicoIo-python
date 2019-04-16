@@ -4,8 +4,6 @@ import uuid
 from indicoio.utils.errors import IndicoError
 from indicoio.custom import Collection, collections
 
-collection_name = "__test_python_text__"
-alternate_name = "__alternate_test_python_text__"
 TEST_DATA = [
     ["input 1", "label 1"],
     ["input 11", "label 1"],
@@ -41,7 +39,7 @@ class CustomAPITestBase(unittest.TestCase):
         self.collection.train()
         self.collection.wait()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         for cn in [self.collection_name, self.alternate_name]:
             self._clean_collection(cn)
 
