@@ -36,8 +36,14 @@ def test_api_handler(mock_warn):
 
 @patch("warnings.warn")
 @patch("requests.post", MagicMock(return_value=mock_response))
-@patch("indicoio.config.host", "localhost:8000")
 def test_local_host():
     from indicoio.utils.api import api_handler
+    import indicoio
 
-    api_handler("test", cloud=None, api="sentiment")
+    previous_host = indicoio.config.host
+    indicoio.config.host = "localhost:8000"
+
+    try:
+        api_handler("test", cloud=None, api="sentiment")
+    finally:
+        indicoio.config.host = previous_host
