@@ -8,6 +8,7 @@ from .indico_text_base import TextTest
 import numpy as np
 
 
+
 class RelevanceTest(TextTest):
 
     def test_relevance(self):
