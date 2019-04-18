@@ -47,3 +47,4 @@ def test_local_host():
         api_handler("test", cloud=None, api="sentiment")
     finally:
         indicoio.config.host = previous_host
+
