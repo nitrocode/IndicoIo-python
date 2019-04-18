@@ -63,7 +63,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     setup_requires=["six >= 1.3.0", "pillow >= 2.8.1"],
-    tests_require=["mock >= 1.3.0, < 2.0.0", "nose >= 1.0"],
+    tests_require=["mock >= 1.3.0, < 2.0.0", "nose >= 1.0", "numpy == 1.16.2"],
     test_suite="nose.collector",
     install_requires=REQUIREMENTS,
 )
