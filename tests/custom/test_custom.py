@@ -82,13 +82,13 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
         assert self.test_data[0][1] in result.keys()
 
     def test_add_predict_tfidf(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data, save_for_explanations=True)
+        collection = Collection(self.collection_name)
+        collection.add_data(self.test_data, save_for_explanations=True)
         collection.train(model_type='tfidf')
         collection.wait()
-        result = collection.predict(test_data[0][0])
-        assert test_data[0][1] in result.keys()
-        collection.explain(test_data[0][0], sequence_features=True)
+        result = collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] in result.keys()
+        collection.explain(self.test_data[0][0], sequence_features=True)
 
     def test_vectorize(self):
         joinedtoken = 'awkwardjoin'
