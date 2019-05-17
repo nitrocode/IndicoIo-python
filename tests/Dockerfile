@@ -10,6 +10,7 @@ RUN apt-get update && \
   pip install pytest-parallel && \
   pip install pytest-html && \
   pip install ipython && \
+  pip install teamcity-messages && \
   mkdir /app
 
 COPY . /app/
