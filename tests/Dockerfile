@@ -8,6 +8,7 @@ RUN apt-get update && \
   pip install indicoio && \
   pip install pytest && \
   pip install pytest-parallel && \
+  pip install pytest-html && \
   pip install ipython && \
   mkdir /app
 
@@ -20,4 +21,4 @@ RUN pip install -r requirements.txt
 ENV INDICO_API_KEY=$INDICO_API_KEY
 ENV INDICO_API_HOST=$INDICO_API_HOST
 
-CMD ["pytest", "-v"]
+CMD ["pytest", "-v", "--worker", "8", "--html=./tests/artifacts/report.html"]
