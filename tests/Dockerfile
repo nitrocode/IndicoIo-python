@@ -22,4 +22,4 @@ RUN pip install -r requirements.txt
 ENV INDICO_API_KEY=$INDICO_API_KEY
 ENV INDICO_API_HOST=$INDICO_API_HOST
 
-CMD ["pytest", "-v", "--worker", "8", "--html=./tests/artifacts/report.html"]
+CMD ["pytest", "-v", "--worker", "1", "--html=./tests/artifacts/report.html"]
