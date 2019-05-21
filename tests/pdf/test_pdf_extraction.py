@@ -1,5 +1,6 @@
 import os.path
 
+import PIL
 from PIL import Image
 from PIL.PpmImagePlugin import PpmImageFile
 import six
@@ -26,7 +27,7 @@ class PDFExtractionTestCase(PDFTestCase):
         assert 'metadata' in results.keys()
         assert 'images' in results.keys()
         assert isinstance(results.get('images'), list)
-        assert isinstance(results.get('images')[0], PpmImageFile)
+        assert isinstance(results.get('images')[0], PIL.JpegImagePlugin.JpegImageFile)
 
     def test_table_support(self):
         results = pdf_extraction(PDF, tables=True)
