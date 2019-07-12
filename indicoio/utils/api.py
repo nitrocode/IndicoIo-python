@@ -73,10 +73,7 @@ def api_handler(input_data, cloud, api, url_params=None, batch_size=None, **kwar
     host = "%s.indico.domains" % cloud if cloud else config.host
 
     # LOCAL DEPLOYMENTS
-    if not (host.endswith('indico.domains') or host.endswith('indico.io')):
-        url_protocol = "http"
-    else:
-        url_protocol = config.url_protocol
+    url_protocol = config.url_protocol
 
     headers = dict(JSON_HEADERS)
     headers["X-ApiKey"] = url_params.get("api_key") or config.api_key
