@@ -1,5 +1,6 @@
 import os
 import sys
+
 try:
     import configparser
 except ImportError:
@@ -11,12 +12,11 @@ PY3 = not PY2
 
 
 class Settings(configparser.ConfigParser):
-
     def __init__(self, *args, **kwargs):
         """
         files: filepaths or open file objects
         """
-        self.files = kwargs.pop('files')
+        self.files = kwargs.pop("files")
 
         configparser.ConfigParser.__init__(self, *args, **kwargs)
 
@@ -32,8 +32,8 @@ class Settings(configparser.ConfigParser):
             except configparser.MissingSectionHeaderError:
                 self.read(fd)
 
-        self.auth_settings = self.get_section('auth')
-        self.private_cloud_settings = self.get_section('private_cloud')
+        self.auth_settings = self.get_section("auth")
+        self.private_cloud_settings = self.get_section("private_cloud")
 
     def get_section(self, section):
         """
@@ -46,25 +46,21 @@ class Settings(configparser.ConfigParser):
 
     def cloud(self):
         return (
-            os.getenv("INDICO_CLOUD") or
-            self.private_cloud_settings.get('cloud') or
-            None
+            os.getenv("INDICO_CLOUD")
+            or self.private_cloud_settings.get("cloud")
+            or None
         )
 
     def api_key(self):
-        return (
-            os.getenv("INDICO_API_KEY") or
-            self.auth_settings.get('api_key') or
-            None
-        )
+        return os.getenv("INDICO_API_KEY") or self.auth_settings.get("api_key") or None
 
-SETTINGS = Settings(files=[
-    os.path.expanduser("~/.indicorc"),
-    os.path.join(os.getcwd(), '.indicorc')
-])
+
+SETTINGS = Settings(
+    files=[os.path.expanduser("~/.indicorc"), os.path.join(os.getcwd(), ".indicorc")]
+)
 
 api_key = SETTINGS.api_key()
 cloud = SETTINGS.cloud()
-host = os.getenv("INDICO_API_HOST", 'apiv2.indico.io')
+host = os.getenv("INDICO_API_HOST", "api-dev.indico.io")
 url_protocol = "https"
 serializer = "msgpack"
