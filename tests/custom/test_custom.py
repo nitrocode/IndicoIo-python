@@ -1,187 +1,201 @@
 import unittest
+import uuid
 
 from indicoio.utils.errors import IndicoError
-from indicoio.custom import Collection, collections
+from indicoio.custom import Collection, collections, vectorize
 
-collection_name = "__test_python_text__"
-alternate_name = "__alternate_test_python_text__"
-test_data = [
-    ['input 1', 'label 1'],
-    ['input 11', 'label 1'],
-    ['input 2', 'label 2'],
-    ['input 22', 'label 2'],
-    ['input 3', 'label 3'],
-    ['input 33', 'label 3'],
-    ['input 4', 'label 4'],
-    ['input 44', 'label 4']
+TEST_DATA = [
+    ["input 1", "label 1"],
+    ["input 11", "label 1"],
+    ["input 2", "label 2"],
+    ["input 22", "label 2"],
+    ["input 3", "label 3"],
+    ["input 33", "label 3"],
+    ["input 4", "label 4"],
+    ["input 44", "label 4"],
 ]
 
-image_collection_name = "__test_python_image__"
-image_test_data = [
+IMAGE_TEST_DATA = [
     ["https://i.imgur.com/xUX1rvY.png", "dog"],
     ["https://i.imgur.com/xUX1rvY.png", "dog"],
-    ['https://i.imgur.com/2Q0EWRz.jpg', 'cat'],
-    ['https://i.imgur.com/XhUDCMP.jpg', 'cat']
+    ["https://i.imgur.com/2Q0EWRz.jpg", "cat"],
+    ["https://i.imgur.com/XhUDCMP.jpg", "cat"],
 ]
-test_user_email = 'contact@indico.io'
 
 
-class CustomAPIsTestCase(unittest.TestCase):
+class CustomAPITestBase(unittest.TestCase):
+    test_data = None
+    test_user_email = "contact@indico.io"
 
     def setUp(self):
+        self.uuid = uuid.uuid1()
+        self.collection_name = "__test_python___{}__".format(self.uuid)
+        self.alternate_name = "__alternate{}".format(self.collection_name)
+
+        self.collection = Collection(self.collection_name)
+        assert self.test_data is not None
+
+        self.collection.add_data(self.test_data)
+        self.collection.train()
+        self.collection.wait()
+
+    def tearDown(self):
+        for cn in [self.collection_name, self.alternate_name]:
+            self._clean_collection(cn)
+
+        collection_names = list(collections().keys())
+        assert self.collection_name not in collection_names
+        assert self.alternate_name not in collection_names
+
+    @staticmethod
+    def _clean_collection(collection_name):
+        col = Collection(collection_name)
         try:
-            Collection(collection_name).deregister()
-        except IndicoError:
-            pass
+            info = col.info()
+            if info["status"] == "training":
+                col.wait()
 
-        try:
-            Collection(alternate_name).deregister()
-        except IndicoError:
-            pass
+            emails = set(
+                [
+                    email
+                    for perm in info["permissions"]
+                    for email in info["permissions"][perm]
+                ]
+            )
+            for email in emails:
+                col.deauthorize(email)
 
-        try:
-            Collection(collection_name).clear()
-        except IndicoError:
-            pass
+            if info["registered"]:
+                col.deregister()
 
-        try:
-            Collection(image_collection_name).clear()
-        except IndicoError:
-            pass
-
-        try:
-            Collection(alternate_name).clear()
-        except IndicoError:
-            pass
+            col.clear()
+        except IndicoError as e:
+            if "does not exist" not in str(e):
+                raise e
 
 
+class CustomAPIsTextTestCase(CustomAPITestBase):
+    test_data = TEST_DATA
 
     def test_add_predict(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
+        result = self.collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] in result.keys()
+
+    def test_add_predict_tfidf(self):
+        collection = Collection(self.collection_name)
+        collection.add_data(self.test_data, save_for_explanations=True)
+        collection.train(model_type="tfidf")
         collection.wait()
-        result = collection.predict(test_data[0][0])
-        assert test_data[0][1] in result.keys()
+        result = collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] in result.keys()
+        collection.explain(self.test_data[0][0], sequence_features=True)
+
+    def test_vectorize(self):
+        joinedtoken = "awkwardjoin"
+        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
+        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
 
     def test_list_collection(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        assert collections()[collection_name]
-
-    def test_add_large_batch(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data*100)
-        collection.train()
-        collection.wait()
-        result = collection.predict(test_data[0][0])
-        assert test_data[0][1] in result.keys()
-
-    def test_add_image_batch(self):
-        collection = Collection(image_collection_name)
-        collection.add_data(image_test_data)
-        collection.train()
-        collection.wait()
-        result = collection.predict(image_test_data[0][0])
-        assert image_test_data[0][1] in result.keys()
+        assert collections()[self.collection_name]
 
     def test_clear_example(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        result = collection.predict(test_data[0][0])
-        assert test_data[0][1] in result.keys()
-        collection.remove_example(test_data[0][0])
-        collection.train()
-        collection.wait()
-        result = collection.predict(test_data[0][0])
-        assert test_data[0][1] not in result.keys()
+        result = self.collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] in result.keys()
+        self.collection.remove_example(self.test_data[0][0])
+        self.collection.train()
+        self.collection.wait()
+        result = self.collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] not in result.keys()
 
     def test_clear_collection(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        assert collections()[collection_name]
-        collection.clear()
-        assert not collections().get(collection_name)
+        assert collections()[self.collection_name]
+        self.collection.clear()
+        assert not collections().get(self.collection_name)
 
     def test_register(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        collection.register()
-        assert collection.info().get('registered')
-        assert not collection.info().get('public')
-        collection.deregister()
-        assert not collection.info().get('registered')
-        assert not collection.info().get('public')
-        collection.clear()
+        self.collection.register()
+        assert self.collection.info().get("registered")
+        assert not self.collection.info().get("public")
+        self.collection.deregister()
+        assert not self.collection.info().get("registered")
+        assert not self.collection.info().get("public")
 
     def test_make_public(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        collection.register(make_public=True)
-        assert collection.info().get('registered')
-        assert collection.info().get('public')
-        collection.deregister()
-        assert not collection.info().get('registered')
-        assert not collection.info().get('public')
-        collection.clear()
+        self.collection.register(make_public=True)
+        info = self.collection.info()
+        assert info["registered"]
+        assert info["public"]
+        self.collection.deregister()
+        info = self.collection.info()
+        assert not info["registered"]
+        assert not info["public"]
 
     def test_authorize_read_permissions(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        collection.register()
-        collection.authorize(email=test_user_email, permission_type='read')
-        assert test_user_email in collection.info().get('permissions').get('read')
-        assert not test_user_email in collection.info().get('permissions').get('write')
-        collection.deauthorize(email=test_user_email)
-        assert not test_user_email in collection.info().get('permissions').get('read')
-        assert not test_user_email in collection.info().get('permissions').get('write')
-        collection.clear()
+        self.collection.register()
+        self.collection.authorize(email=self.test_user_email, permission_type="read")
+
+        permissions = self.collection.info()["permissions"]
+        read = permissions["read"]
+        write = permissions["write"]
+        assert self.test_user_email in read
+        assert self.test_user_email not in write
+
+        self.collection.deauthorize(email=self.test_user_email)
+
+        permissions = self.collection.info()["permissions"]
+        read = permissions["read"]
+        write = permissions["write"]
+        assert self.test_user_email not in read
+        assert self.test_user_email not in write
 
     def test_authorize_write_permissions(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        collection.register()
-        collection.authorize(email=test_user_email, permission_type='write')
-        assert test_user_email in collection.info().get('permissions').get('write')
-        assert not test_user_email in collection.info().get('permissions').get('read')
-        collection.deauthorize(email=test_user_email)
-        assert not test_user_email in collection.info().get('permissions').get('read')
-        assert not test_user_email in collection.info().get('permissions').get('write')
-        collection.clear()
+        self.collection.register()
+        self.collection.authorize(email=self.test_user_email, permission_type="write")
+        assert self.test_user_email in self.collection.info().get("permissions").get(
+            "write"
+        )
+        assert not self.test_user_email in self.collection.info().get(
+            "permissions"
+        ).get("read")
+        self.collection.deauthorize(email=self.test_user_email)
+        assert not self.test_user_email in self.collection.info().get(
+            "permissions"
+        ).get("read")
+        assert not self.test_user_email in self.collection.info().get(
+            "permissions"
+        ).get("write")
 
     def test_rename(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        collection.rename(alternate_name)
-        new_collection = Collection(alternate_name)
+        self.collection.rename(self.alternate_name)
+        new_collection = Collection(self.alternate_name)
 
         # name no longer exists
         with self.assertRaises(IndicoError):
-            collection = Collection(collection_name)
+            collection = Collection(self.collection_name)
             collection.train()
 
         # collection is now accessible via the alternate name
         new_collection.info()
-        new_collection.clear()
 
     def test_large_add_data(self):
-        collection = Collection(collection_name)
-        results = collection.add_data(test_data*50, batch_size=50)
+        results = self.collection.add_data(self.test_data * 50, batch_size=50)
         self.assertTrue(all([result is True for result in results]))
+
+    def test_add_large_batch(self):
+        self.collection.add_data(self.test_data * 100)
+        self.collection.train()
+        self.collection.wait()
+        result = self.collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] in result.keys()
+
+
+class CustomAPIsImageTestCase(CustomAPITestBase):
+
+    test_data = IMAGE_TEST_DATA
+
+    def test_add_image_batch(self):
+        result = self.collection.predict(self.test_data[0][0])
+        assert self.test_data[0][1] in result.keys()
 
