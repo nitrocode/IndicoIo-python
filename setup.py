@@ -13,19 +13,22 @@ except ImportError:
 
 
 REQUIREMENTS = [
-    "requests >= 1.2.3",
-    "six >= 1.3.0",
-    "pillow >= 2.8.1",
-    "msgpack == 0.5.6",
-    "numpy >= 1.14.1",
-    "msgpack-numpy == 0.4.1"
+    "mock>=1.3.0",
+    "msgpack==0.5.6",
+    "msgpack-numpy==0.4.1",
+    "Pillow<6.0.0",
+    "requests>=2.2.1",
+    "setuptools==36.5.0",
+    "six>=1.3.0",
 ]
 
 # shim for futures support
 if PY2:
-    REQUIREMENTS.append(
-        "futures >= 3.0.0"
-    )
+    REQUIREMENTS.append("futures>=3.0.0")
+    REQUIREMENTS.append("numpy<1.17")
+
+else:
+    REQUIREMENTS.append("numpy>=1.14.1")
 
 setup(
     name="IndicoIo",
@@ -47,7 +50,7 @@ setup(
     url="https://github.com/IndicoDataSolutions/indicoio-python",
     author="Alec Radford, Slater Victoroff, Aidan McLaughlin, Madison May, Anne Carlson",
     author_email="engineering@indico.io",
-    classifiers = [
+    classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
@@ -61,14 +64,8 @@ setup(
         "Topic :: Software Development",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    setup_requires=[
-        "six >= 1.3.0",
-        "pillow >= 2.8.1"
-    ],
-    tests_require=[
-        "mock >= 1.3.0, < 2.0.0",
-        "nose >= 1.0"
-    ],
+    setup_requires=["six >= 1.3.0", "pillow >= 2.8.1"],
+    tests_require=["mock >= 1.3.0, < 2.0.0", "nose >= 1.0"],
     test_suite="nose.collector",
-    install_requires=REQUIREMENTS
+    install_requires=REQUIREMENTS,
 )

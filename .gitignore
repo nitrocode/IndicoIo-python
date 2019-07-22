@@ -37,3 +37,6 @@ nosetests.xml
 .noseids
 .pytest*
 *.json
+
+codeship.aes
+.env
