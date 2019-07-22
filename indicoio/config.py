@@ -61,6 +61,6 @@ SETTINGS = Settings(
 
 api_key = SETTINGS.api_key()
 cloud = SETTINGS.cloud()
-host = os.getenv("INDICO_API_HOST", "api-dev.indico.io")
+host = os.getenv("INDICO_API_HOST", "apiv2.indico.io")
 url_protocol = "https"
 serializer = "msgpack"
