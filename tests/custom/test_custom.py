@@ -269,3 +269,10 @@ class CustomAPIsModelTypeTests(CustomAPITestBase):
         assert len(result) == 1.0
         assert result[0]["text"] == "purple"
 
+    def test_add_multilabel_rare_classes(self):
+        collection = Collection(self.collection_name)
+        targets = [["a"], ["a"], ["b"], [], []]
+        collection.add_data([["a", target] for target in targets])
+        collection.train()
+        # Ensure this doesn't error out w/ a "Not Enough Data Error"
+        collection.wait()
