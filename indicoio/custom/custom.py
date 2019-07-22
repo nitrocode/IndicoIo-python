@@ -23,24 +23,31 @@ def _unpack_list(example):
         )
 
 
-def _unpack_dict(example):
+def _unpack_dict(example, target=None):
     """
     Input data format standardization
     """
-    try:
-        x = example['data']
-        y = example['target']
-        meta = example.get('metadata', {})
+    if target is None:
+        try:
+            x = example['data']
+            y = example['target']
+            meta = example.get('metadata', {})
+            return x, y, meta
+        except KeyError:
+            raise IndicoError(
+                "Invalid input data.  Please ensure input data is "
+                "formatted as a list of dicts with `data` and `target` keys. "
+                "A `metadata` key may optionally be included."
+            )
+    else:
+        # multi-field input
+        y = example.pop(target, None)
+        x = example
+        meta = {}
         return x, y, meta
-    except KeyError:
-        raise IndicoError(
-            "Invalid input data.  Please ensure input data is "
-            "formatted as a list of dicts with `data` and `target` keys. "
-            "A `metadata` key may optionally be included."
-        )
 
 
-def _unpack_data(data):
+def _unpack_data(data, target=None):
     """
     Break Xs, Ys, and metadata out into separate lists for data preprocessing.
     Run basic data validation.
@@ -52,22 +59,23 @@ def _unpack_data(data):
         if isinstance(example, (list, tuple)):
             xs[idx], ys[idx], metadata[idx] = _unpack_list(example)
         if isinstance(example, dict):
-            xs[idx], ys[idx], metadata[idx] = _unpack_dict(example)
+            xs[idx], ys[idx], metadata[idx] = _unpack_dict(example, target=target)
 
     return xs, ys, metadata
 
 
-def _pack_data(X, Y, metadata):
+def _pack_data(X, Y, metadata, target=None):
     """
     After modifying / preprocessing inputs,
     reformat the data in preparation for JSON serialization
     """
-    if not any(metadata):
-        # legacy list of list format is acceptable
-        return list(zip(X, Y))
+    if target is None:
+        if not any(metadata):
+            # legacy list of list format is acceptable
+            return list(zip(X, Y))
 
-    else:
-        # newer dictionary-based format is required in order to save metadata
+        else:
+            # newer dictionary-based format is required in order to save metadata
             return [
                 {
                     'data': x,
@@ -76,6 +84,12 @@ def _pack_data(X, Y, metadata):
                 }
                 for x, y, meta in zip(X, Y, metadata)
             ]
+    else:
+        # multi-field input
+        for i in range(len(X)):
+            assert isinstance(X[i], dict)
+            X[i][target] = Y[i]
+        return X
 
 
 def visualize_explanation(explanation, label=None):
@@ -165,9 +179,11 @@ class Collection(object):
         if not batch:
           data = [data]
 
-        X, Y, metadata = _unpack_data(data)
+
+        target = kwargs.get('target')
+        X, Y, metadata = _unpack_data(data, target=target)
         X = data_preprocess(X, batch=True)
-        data = _pack_data(X, Y, metadata)
+        data = _pack_data(X, Y, metadata, target=target)
 
         # if a single example was passed in, unpack
         if not batch:

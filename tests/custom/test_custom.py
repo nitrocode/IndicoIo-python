@@ -85,6 +85,18 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
         collection = Collection(self.collection_name)
         collection.add_data(self.test_data, save_for_explanations=True)
         collection.train(model_type="tfidf")
+
+    def test_vectorize(self):
+        joinedtoken = "awkwardjoin"
+        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
+        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
+
+    def test_list_collection(self):
+        collection = Collection(collection_name)
+        collection.add_data(test_data)
+        collection.train()
         collection.wait()
         result = collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
@@ -179,10 +191,6 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
         # collection is now accessible via the alternate name
         new_collection.info()
 
-    def test_large_add_data(self):
-        results = self.collection.add_data(self.test_data * 50, batch_size=50)
-        self.assertTrue(all([result is True for result in results]))
-
     def test_add_large_batch(self):
         self.collection.add_data(self.test_data * 100)
         self.collection.train()
@@ -198,4 +206,70 @@ class CustomAPIsImageTestCase(CustomAPITestBase):
     def test_add_image_batch(self):
         result = self.collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
+
+    def test_comparison_model(self):
+        collection = Collection(collection_name)
+        collection.add_data(
+            [
+                {
+                    "jd_title": "Field Engineer",
+                    "resume_text": "Worked as part of field eng. team building software with a direct line into clients.",
+                    "description": "Must have prior experience working as field eng.",
+                    "fit": "yes",
+                },
+                {
+                    "jd_title": "Field Engineer",
+                    "resume_text": "Migrated infrastructure to AWS",
+                    "description": "Must have prior experience working as field eng.",
+                    "fit": "yes",
+                },
+                {
+                    "jd_title": "Field Engineer",
+                    "resume_text": "Discord mod",
+                    "description": "Must have prior experience working as field eng.",
+                    "fit": "no",
+                },
+                {
+                    "jd_title": "Field Engineer",
+                    "resume_text": "cat walker",
+                    "description": "Must have prior experience working as field eng.",
+                    "fit": "no",
+                },
+            ],
+            comparison=["resume_text", "description"],
+            target="fit",
+        )
+        collection.train()
+        collection.wait()
+
+        result = collection.predict(
+            {
+                "jd_title": "Field Engineer",
+                "resume_text": "cat walker",
+                "description": "Must have prior experience working as field eng.",
+                "fit": "no",
+            },
+            top_n=1,
+        )
+        assert "no" in result.keys()
+
+    def test_multilabel_sequence_model(self):
+        import indicoio
+
+        indicoio.config.host = "localhost:8001"
+        collection = Collection(sequence_collection_name)
+        collection.add_data(
+            [
+                ["Color: red", [{"start": 7, "end": 10, "label": "color"}]],
+                ["Color: blue", [{"start": 7, "end": 11, "label": "color"}]],
+                ["Color: green", [{"start": 7, "end": 12, "label": "color"}]],
+                ["Color: yellow", [{"start": 7, "end": 13, "label": "color"}]],
+            ]
+            * 5
+        )
+        collection.train(model_version="multilabel_v1", timeout=30)
+        collection.wait()
+        result = collection.predict("Color: purple")
+        assert len(result) == 1.0
+        assert result[0]["text"] == "purple"
 
