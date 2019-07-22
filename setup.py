@@ -16,7 +16,7 @@ REQUIREMENTS = [
     "mock>=1.3.0",
     "msgpack==0.5.6",
     "msgpack-numpy==0.4.1",
-    "Pillow>=2.8.2",
+    "Pillow<6.0.0",
     "requests>=2.2.1",
     "setuptools==36.5.0",
     "six>=1.3.0",
