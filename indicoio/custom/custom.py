@@ -288,12 +288,15 @@ class Collection(object):
         url_params = {"batch": batch, "api_key": api_key, "version": version, 'method': 'remove_example'}
         return self._api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
 
-    def wait(self, interval=1, **kwargs):
+    def wait(self, interval=1, timeout=None, **kwargs):
         """
         Block until the collection's model is completed training
         """
+        start = time.time()
         while True:
             status = self.info(**kwargs).get('status')
+            if timeout and time.time() - start > timeout:
+                break
             if status == "ready":
                 break
             if status != "training":
