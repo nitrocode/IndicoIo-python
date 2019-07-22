@@ -32,13 +32,6 @@ class CustomAPITestBase(unittest.TestCase):
         self.collection_name = "__test_python___{}__".format(self.uuid)
         self.alternate_name = "__alternate{}".format(self.collection_name)
 
-        self.collection = Collection(self.collection_name)
-        assert self.test_data is not None
-
-        self.collection.add_data(self.test_data)
-        self.collection.train()
-        self.collection.wait()
-
     def tearDown(self):
         for cn in [self.collection_name, self.alternate_name]:
             self._clean_collection(cn)
@@ -74,56 +67,36 @@ class CustomAPITestBase(unittest.TestCase):
                 raise e
 
 
-class CustomAPIsTextTestCase(CustomAPITestBase):
+class TrainedCustomApiTestCase(CustomAPITestBase):
+    def setUp(self):
+        super().setUp()
+        self.collection = Collection(self.collection_name)
+        assert self.test_data is not None
+
+        self.collection.add_data(self.test_data)
+        self.collection.train()
+        self.collection.wait()
+
+
+def test_vectorize():
+    joinedtoken = "awkwardjoin"
+    assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
+    assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
+    assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
+    assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
+
+
+class CustomAPIsTextTestCase(TrainedCustomApiTestCase):
     test_data = TEST_DATA
 
     def test_add_predict(self):
         result = self.collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
 
-    def test_add_predict_tfidf(self):
-        collection = Collection(self.collection_name)
-        collection.add_data(self.test_data, save_for_explanations=True)
-        collection.train(model_type="tfidf")
-
-    def test_vectorize(self):
-        joinedtoken = "awkwardjoin"
-        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
-        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
-        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
-        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
-
-    def test_add_predict_tfidf(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data, save_for_explanations=True)
-        collection.train(model_type="tfidf")
-        collection.wait()
-        result = collection.predict(test_data[0][0])
-        assert test_data[0][1] in result.keys()
-        collection.explain(test_data[0][0], sequence_features=True)
-
-    def test_vectorize(self):
-        joinedtoken = "awkwardjoin"
-        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
-        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
-        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
-        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
-
-    def test_list_collection(self):
-        collection = Collection(collection_name)
-        collection.add_data(test_data)
-        collection.train()
-        collection.wait()
-        result = collection.predict(self.test_data[0][0])
+    def test_explanations(self):
+        result = self.collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
         collection.explain(self.test_data[0][0], sequence_features=True)
-
-    def test_vectorize(self):
-        joinedtoken = "awkwardjoin"
-        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
-        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
-        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
-        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
 
     def test_list_collection(self):
         assert collections()[self.collection_name]
@@ -215,16 +188,26 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
         assert self.test_data[0][1] in result.keys()
 
 
-class CustomAPIsImageTestCase(CustomAPITestBase):
-
+class CustomAPIsImageTestCase(TrainedCustomApiTestCase):
     test_data = IMAGE_TEST_DATA
 
     def test_add_image_batch(self):
         result = self.collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
 
+
+class CustomAPIsModelTypeTests(CustomAPITestBase):
+    def test_tfidf_explain(self):
+        collection = Collection(self.collection_name)
+        collection.add_data(TEST_DATA, save_for_explanations=True)
+        collection.train(model_type="tfidf")
+        collection.wait()
+        result = collection.predict(TEST_DATA[0][0])
+        assert TEST_DATA[0][1] in result.keys()
+        collection.explain(TEST_DATA[0][0], sequence_features=True)
+
     def test_comparison_model(self):
-        collection = Collection(collection_name)
+        collection = Collection(self.collection_name)
         collection.add_data(
             [
                 {
@@ -270,10 +253,7 @@ class CustomAPIsImageTestCase(CustomAPITestBase):
         assert "no" in result.keys()
 
     def test_multilabel_sequence_model(self):
-        import indicoio
-
-        indicoio.config.host = "localhost:8001"
-        collection = Collection(sequence_collection_name)
+        collection = Collection(self.collection_name)
         collection.add_data(
             [
                 ["Color: red", [{"start": 7, "end": 10, "label": "color"}]],
