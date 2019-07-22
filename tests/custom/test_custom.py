@@ -39,7 +39,7 @@ class CustomAPITestBase(unittest.TestCase):
         self.collection.train()
         self.collection.wait()
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         for cn in [self.collection_name, self.alternate_name]:
             self._clean_collection(cn)
 
@@ -84,18 +84,18 @@ class CustomAPIsTextTestCase(CustomAPITestBase):
     def test_add_predict_tfidf(self):
         collection = Collection(self.collection_name)
         collection.add_data(self.test_data, save_for_explanations=True)
-        collection.train(model_type='tfidf')
+        collection.train(model_type="tfidf")
         collection.wait()
         result = collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
         collection.explain(self.test_data[0][0], sequence_features=True)
 
     def test_vectorize(self):
-        joinedtoken = 'awkwardjoin'
-        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.
-        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.
-        assert sum(vectorize(joinedtoken, subtokens=False, domain='finance')) == 0.
-        assert sum(vectorize(joinedtoken, subtokens=True, domain='finance')) != 0.
+        joinedtoken = "awkwardjoin"
+        assert sum(vectorize(joinedtoken, subtokens=False)) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True)) != 0.0
+        assert sum(vectorize(joinedtoken, subtokens=False, domain="finance")) == 0.0
+        assert sum(vectorize(joinedtoken, subtokens=True, domain="finance")) != 0.0
 
     def test_list_collection(self):
         assert collections()[self.collection_name]
