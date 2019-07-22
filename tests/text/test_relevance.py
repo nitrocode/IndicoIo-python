@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import numpy as np
 
 from indicoio import relevance
 from .indico_text_base import TextTest
 import numpy as np
+
+
 
 class RelevanceTest(TextTest):
 
