@@ -69,7 +69,7 @@ class CustomAPITestBase(unittest.TestCase):
 
 class TrainedCustomApiTestCase(CustomAPITestBase):
     def setUp(self):
-        super().setUp()
+        super(TrainedCustomApiTestCase, self).setUp()
         self.collection = Collection(self.collection_name)
         assert self.test_data is not None
 
