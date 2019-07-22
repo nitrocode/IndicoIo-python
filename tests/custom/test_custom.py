@@ -96,7 +96,7 @@ class CustomAPIsTextTestCase(TrainedCustomApiTestCase):
     def test_explanations(self):
         result = self.collection.predict(self.test_data[0][0])
         assert self.test_data[0][1] in result.keys()
-        collection.explain(self.test_data[0][0], sequence_features=True)
+        self.collection.explain(self.test_data[0][0], sequence_features=True)
 
     def test_list_collection(self):
         assert collections()[self.collection_name]

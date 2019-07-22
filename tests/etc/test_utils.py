@@ -36,7 +36,7 @@ def test_api_handler(mock_warn):
 
 @patch("warnings.warn")
 @patch("requests.post", MagicMock(return_value=mock_response))
-def test_local_host():
+def test_local_host(warnings_mock):
     from indicoio.utils.api import api_handler
     import indicoio
 
