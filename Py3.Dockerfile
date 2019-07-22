@@ -9,7 +9,7 @@ RUN apk add --no-cache libjpeg jpeg-dev zlib-dev && \
 COPY requirements.py requirements.py
 COPY README.rst README.rst
 
-RUN pip3 install $(python2 -c "from requirements import REQUIREMENTS; print(' '.join(REQUIREMENTS))")
+RUN pip3 install $(python3 -c "from requirements import REQUIREMENTS; print(' '.join(REQUIREMENTS))")
 
 COPY . /indicoio-python
 WORKDIR /indicoio-python
