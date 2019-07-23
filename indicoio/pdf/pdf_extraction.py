@@ -31,7 +31,6 @@ def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **k
     )
 
     if batch:
-        print(results)
         for result in results:
             result["images"] = postprocess_images(result.get("images", []))
     else:
