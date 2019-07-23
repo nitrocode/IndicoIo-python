@@ -61,7 +61,7 @@ def standardize_input_data(data):
     if type(data) == bytes:
         data = data.decode("utf-8")
     if type(data) == list:
-        data = [el.decode("utf-8") if type(data) == bytes else el for el in data]
+        data = [standardize_input_data(el) for el in data]
     return data
 
 
@@ -202,3 +202,4 @@ def create_url(url_protocol, host, api, url_params):
         url += "?" + urlencode(params)
 
     return url
+
