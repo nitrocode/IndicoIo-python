@@ -1,6 +1,7 @@
 from ..utils.api import api_handler
 from ..utils.decorators import detect_batch_decorator
 
+
 @detect_batch_decorator
 def sentiment_hq(text, cloud=None, batch=False, api_key=None, version=None, **kwargs):
     """
@@ -23,4 +24,6 @@ def sentiment_hq(text, cloud=None, batch=False, api_key=None, version=None, **kw
     :rtype: Float
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(text, cloud=cloud, api="sentimenthq", url_params=url_params, **kwargs)
+    return api_handler(
+        text, cloud=cloud, api="sentimenthq", url_params=url_params, **kwargs
+    )

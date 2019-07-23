@@ -5,8 +5,8 @@ import os
 from indicoio import facial_localization
 from .indico_image_base import ImageTest, DIR
 
-class FacialLocalizationTest(ImageTest):
 
+class FacialLocalizationTest(ImageTest):
     def test_facial_localization(self):
         test_face = os.path.normpath(os.path.join(DIR, "data/happy.png"))
         res = facial_localization(test_face)[0]

@@ -5,6 +5,7 @@ from indicoio import config
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
+
 class ImageTest(TestCase):
     def setUp(self):
         self.api_key = config.api_key
@@ -17,6 +18,7 @@ class ImageTest(TestCase):
     def _require_numpy():
         try:
             import numpy as np
+
             return np
         except ImportError:
             raise SkipTest("Numpy is not installed!")

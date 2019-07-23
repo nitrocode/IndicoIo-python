@@ -9,7 +9,9 @@ from PIL import Image
 
 from indicoio.utils.errors import IndicoError
 
-B64_PATTERN = re.compile("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)")
+B64_PATTERN = re.compile(
+    "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)"
+)
 
 
 def file_exists(filename):
@@ -28,7 +30,10 @@ def data_preprocess(data, size=None, min_axis=None, batch=False):
     resizing and image data/structure standardizing.
     """
     if batch:
-        return [data_preprocess(el, size=size, min_axis=min_axis, batch=False) for el in data]
+        return [
+            data_preprocess(el, size=size, min_axis=min_axis, batch=False)
+            for el in data
+        ]
 
     if isinstance(data, dict):
         return {
@@ -42,7 +47,7 @@ def data_preprocess(data, size=None, min_axis=None, batch=False):
         else:
             # base 64 encoded image data, a url, or raw content
             # send raw data to the server and let the server infer type
-            b64_or_url = re.sub('^data:image/.+;base64,', '', data)
+            b64_or_url = re.sub("^data:image/.+;base64,", "", data)
             return b64_or_url
 
     elif isinstance(data, Image.Image):
@@ -52,7 +57,7 @@ def data_preprocess(data, size=None, min_axis=None, batch=False):
     elif type(data).__name__ == "ndarray":
         # data is likely image from numpy/scipy
         if "float" in str(data.dtype) and data.min() >= 0 and data.max() <= 1:
-            data *= 255.
+            data *= 255.0
         try:
             preprocessed = Image.fromarray(data.astype("uint8"))
         except TypeError:
@@ -77,22 +82,25 @@ def data_preprocess(data, size=None, min_axis=None, batch=False):
 
     # standardize on b64 encoding for sending image data over the wire
     temp_output = BytesIO()
-    preprocessed.save(temp_output, format='PNG')
+    preprocessed.save(temp_output, format="PNG")
     temp_output.seek(0)
     output_s = temp_output.read()
-    return base64.b64encode(output_s).decode('utf-8') if PY3 else base64.b64encode(output_s)
+    return (
+        base64.b64encode(output_s).decode("utf-8")
+        if PY3
+        else base64.b64encode(output_s)
+    )
 
 
 def resize_image(image, size, min_axis):
     if min_axis:
-        min_idx, other_idx = (0,1) if image.size[0] < image.size[1] else (1,0)
-        aspect = image.size[other_idx]/float(image.size[min_idx])
+        min_idx, other_idx = (0, 1) if image.size[0] < image.size[1] else (1, 0)
+        aspect = image.size[other_idx] / float(image.size[min_idx])
         if aspect > 10:
             warnings.warn(
-                "An aspect ratio greater than 10:1 is not recommended",
-                Warning
+                "An aspect ratio greater than 10:1 is not recommended", Warning
             )
-        size_arr = [0,0]
+        size_arr = [0, 0]
         size_arr[min_idx] = size
         size_arr[other_idx] = int(size * aspect)
         image = image.resize(tuple(size_arr))

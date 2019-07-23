@@ -30,5 +30,5 @@ TEXT_APIS = {
     "places": places,
     "sentiment": sentiment,
     "sentiment_hq": sentiment_hq,
-    "text_tags": text_tags
+    "text_tags": text_tags,
 }

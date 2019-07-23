@@ -20,5 +20,7 @@ def text_features(text, cloud=None, batch=False, api_key=None, version=None, **k
     :rtype: List of floats which represents the content of the input text
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    kwargs['synonyms'] = False
-    return api_handler(text, cloud=cloud, api="textfeatures", url_params=url_params, **kwargs)
+    kwargs["synonyms"] = False
+    return api_handler(
+        text, cloud=cloud, api="textfeatures", url_params=url_params, **kwargs
+    )

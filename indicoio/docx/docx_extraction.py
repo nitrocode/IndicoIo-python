@@ -2,8 +2,11 @@ from ..utils.docx import docx_preprocess
 from ..utils.api import api_handler
 from ..utils.decorators import detect_batch_decorator
 
+
 @detect_batch_decorator
-def docx_extraction(docx, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+def docx_extraction(
+    docx, cloud=None, batch=False, api_key=None, version=None, **kwargs
+):
     """
     Given a .docx file, returns the raw text associated with the given .docx file.
     The .docx file may be provided as base64 encoded data or as a filepath.
@@ -21,5 +24,7 @@ def docx_extraction(docx, cloud=None, batch=False, api_key=None, version=None, *
     """
     docx = docx_preprocess(docx, batch=batch)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    results = api_handler(docx, cloud=cloud, api="docxextraction", url_params=url_params, **kwargs)
+    results = api_handler(
+        docx, cloud=cloud, api="docxextraction", url_params=url_params, **kwargs
+    )
     return results

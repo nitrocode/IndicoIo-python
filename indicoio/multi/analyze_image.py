@@ -5,6 +5,7 @@ from ..utils.decorators import detect_batch_decorator
 
 DEFAULT_APIS = list(set(IMAGE_APIS.keys()) - set(MULTIAPI_NOT_SUPPORTED))
 
+
 @detect_batch_decorator
 def analyze_image(image, apis=DEFAULT_APIS, **kwargs):
     """
@@ -28,9 +29,9 @@ def analyze_image(image, apis=DEFAULT_APIS, **kwargs):
     :type apis: list of str
     :rtype: Dictionary of api responses
     """
-    cloud = kwargs.pop('cloud', None)
-    batch = kwargs.pop('batch', False)
-    api_key = kwargs.pop('api_key', None)
+    cloud = kwargs.pop("cloud", None)
+    batch = kwargs.pop("batch", False)
+    api_key = kwargs.pop("api_key", None)
 
     return multi(
         data=data_preprocess(image, batch=batch),

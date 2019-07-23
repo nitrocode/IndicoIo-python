@@ -5,6 +5,7 @@ from indicoio import config
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
+
 class MultiTest(TestCase):
     def setUp(self):
         self.api_key = config.api_key

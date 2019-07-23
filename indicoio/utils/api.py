@@ -11,28 +11,36 @@ import datetime
 try:
     from urllib import urlencode
     from urlparse import urlparse
-except: # For Python 3:
+except:  # For Python 3:
     from urllib.parse import urlencode, urlparse
 
 
 import requests
 import msgpack
 import msgpack_numpy as m
+
 m.patch()
 
 from indicoio.utils.encoder import NumpyEncoder
 from indicoio.utils.errors import (
-    convert_to_py_error, IndicoError, BatchProcessingError, APIDoesNotExist
+    convert_to_py_error,
+    IndicoError,
+    BatchProcessingError,
+    APIDoesNotExist,
 )
 from indicoio import JSON_HEADERS
 from indicoio import config
 
 
 def convert(data):
-    if isinstance(data, bytes):  return data.decode('utf-8', 'ignore')
-    if isinstance(data, dict):   return dict(map(convert, data.items()))
-    if isinstance(data, tuple):  return map(convert, data)
-    if isinstance(data, list): return list(map(convert, data))
+    if isinstance(data, bytes):
+        return data.decode("utf-8", "ignore")
+    if isinstance(data, dict):
+        return dict(map(convert, data.items()))
+    if isinstance(data, tuple):
+        return map(convert, data)
+    if isinstance(data, list):
+        return list(map(convert, data))
     return data
 
 
@@ -43,7 +51,7 @@ def batched(iterable, size):
     """
     length = len(iterable)
     for batch_start in range(0, length, size):
-        yield iterable[batch_start:batch_start+size]
+        yield iterable[batch_start : batch_start + size]
 
 
 def standardize_input_data(data):
@@ -51,12 +59,9 @@ def standardize_input_data(data):
     Ensure utf-8 encoded strings are passed to the indico API
     """
     if type(data) == bytes:
-        data = data.decode('utf-8')
+        data = data.decode("utf-8")
     if type(data) == list:
-        data = [
-            el.decode('utf-8') if type(data) == bytes else el
-            for el in data
-        ]
+        data = [el.decode("utf-8") if type(data) == bytes else el for el in data]
     return data
 
 
@@ -100,20 +105,22 @@ def collect_api_results(input_data, url, headers, api, batch_size, kwargs):
                     results.append(result)
             except IndicoError as e:
                 # Log results so far to file
-                timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+                timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
                 filename = "indico-{api}-{timestamp}.json".format(
-                    api=api,
-                    timestamp=timestamp
+                    api=api, timestamp=timestamp
                 )
                 if sys.version_info > (3, 0):
-                    json.dump(results, open(filename, mode='w', encoding='utf-8'), cls=NumpyEncoder)
+                    json.dump(
+                        results,
+                        open(filename, mode="w", encoding="utf-8"),
+                        cls=NumpyEncoder,
+                    )
                 else:
-                    json.dump(results, open(filename, mode='w'), cls=NumpyEncoder)
+                    json.dump(results, open(filename, mode="w"), cls=NumpyEncoder)
                 raise BatchProcessingError(
                     "The following error occurred while processing your data: `{err}` "
                     "Partial results have been saved to {filename}".format(
-                        err=e,
-                        filename=os.path.abspath(filename)
+                        err=e, filename=os.path.abspath(filename)
                     )
                 )
         return results
@@ -127,11 +134,11 @@ def send_request(input_data, api, url, headers, kwargs):
     """
     data = {}
     if input_data != None:
-        data['data'] = input_data
+        data["data"] = input_data
 
     # request that the API respond with a msgpack encoded result
     serializer = kwargs.pop("serializer", config.serializer)
-    data['serializer'] = serializer
+    data["serializer"] = serializer
 
     data.update(**kwargs)
 
@@ -139,16 +146,18 @@ def send_request(input_data, api, url, headers, kwargs):
 
     response = requests.post(url, data=json_data, headers=headers)
 
-    warning = response.headers.get('x-warning')
+    warning = response.headers.get("x-warning")
     if warning:
         warnings.warn(warning)
 
     cloud = urlparse(url).hostname
-    if response.status_code == 503 and not cloud.endswith('.indico.io'):
-        raise APIDoesNotExist("Private cloud '%s' does not include api '%s'" % (cloud, api))
+    if response.status_code == 503 and not cloud.endswith(".indico.io"):
+        raise APIDoesNotExist(
+            "Private cloud '%s' does not include api '%s'" % (cloud, api)
+        )
 
     try:
-        if serializer == 'msgpack':
+        if serializer == "msgpack":
             json_results = msgpack.unpackb(response.content)
         else:
             json_results = response.json()
@@ -158,13 +167,12 @@ def send_request(input_data, api, url, headers, kwargs):
         except:
             json_results = {"error": response.text}
 
-
     if config.PY3:
         json_results = convert(json_results)
 
-    results = json_results.get('results', False)
+    results = json_results.get("results", False)
     if results is False:
-        error = json_results.get('error')
+        error = json_results.get("error")
         raise convert_to_py_error(error)
     return results
 
@@ -176,7 +184,7 @@ def create_url(url_protocol, host, api, url_params):
     is_batch = url_params.pop("batch", None)
     apis = url_params.pop("apis", None)
     version = url_params.pop("version", None) or url_params.pop("v", None)
-    method = url_params.pop('method', None)
+    method = url_params.pop("method", None)
 
     host_url_seg = url_protocol + "://%s" % host
     api_url_seg = "/%s" % api

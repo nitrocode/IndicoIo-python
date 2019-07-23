@@ -4,7 +4,9 @@ from ..utils.decorators import detect_batch_decorator
 
 
 @detect_batch_decorator
-def image_recognition(image, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+def image_recognition(
+    image, cloud=None, batch=False, api_key=None, version=None, **kwargs
+):
     """
     Given an input image, returns a dictionary of image classifications with associated scores
 
@@ -26,4 +28,6 @@ def image_recognition(image, cloud=None, batch=False, api_key=None, version=None
     """
     image = data_preprocess(image, batch=batch, size=144, min_axis=True)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(image, cloud=cloud, api="imagerecognition", url_params=url_params, **kwargs)
+    return api_handler(
+        image, cloud=cloud, api="imagerecognition", url_params=url_params, **kwargs
+    )

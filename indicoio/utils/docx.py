@@ -11,7 +11,7 @@ def docx_preprocess(docx, batch=False):
 
     if os.path.isfile(docx):
         # a filepath is provided, read and encode
-        return b64encode(open(docx, 'rb').read())
+        return b64encode(open(docx, "rb").read())
     else:
         # assume doc is already b64 encoded
         return docx

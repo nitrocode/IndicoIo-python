@@ -10,10 +10,10 @@ Right now, the Democratic Party, which I have called home my entire life,
 is deeply in love with money. Consequently, its leaders have supported and
 advanced all kinds of evil, big and small, in devotion to this love affair.
 """
-POLITICAL_SET = set(['Libertarian', 'Liberal', 'Conservative', 'Green'])
+POLITICAL_SET = set(["Libertarian", "Liberal", "Conservative", "Green"])
+
 
 class PoliticalTest(TextTest):
-
     def test_batch_political(self):
         response = political([TEST_DATA], version=2)
         self.assertTrue(isinstance(response, list))
@@ -28,7 +28,7 @@ class PoliticalTest(TextTest):
         response = political(test_string, version=2)
 
         self.assertTrue(isinstance(response, dict))
-        assert response['Libertarian'] > 0.25
+        assert response["Libertarian"] > 0.25
 
     def test_political_v2(self):
         response = political(TEST_DATA, version=2)

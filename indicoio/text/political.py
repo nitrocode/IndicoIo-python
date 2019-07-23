@@ -29,4 +29,6 @@ def political(text, cloud=None, batch=False, api_key=None, version=2, **kwargs):
     :rtype: Dictionary of party probability pairs
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(text, cloud=cloud, api="political", url_params=url_params, **kwargs)
+    return api_handler(
+        text, cloud=cloud, api="political", url_params=url_params, **kwargs
+    )
