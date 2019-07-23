@@ -21,11 +21,11 @@ class PDFExtractionTestCase(PDFTestCase):
         assert isinstance(results.get("metadata"), dict)
 
     def test_pdf_extraction_batch(self):
-        results = pdf_extraction([PDF, PDF])
+        results = pdf_extraction([PDF])
         assert isinstance(results, list)
 
     def test_pdf_extraction_v2_batch(self):
-        results = pdf_extraction([PDF, PDF], version=2)
+        results = pdf_extraction([PDF], version=2)
         assert isinstance(results, list)
 
     def test_image_support(self):
