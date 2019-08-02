@@ -4,7 +4,7 @@ from indicoio.utils.errors import IndicoError
 from indicoio.custom import Collection, collections
 
 collection_name = "__test_python_text__"
-alternate_name = "__alt_test_python_text__"
+alternate_name = "__alternate_test_python_text__"
 test_data = [
     ['input 1', 'label 1'],
     ['input 11', 'label 1'],

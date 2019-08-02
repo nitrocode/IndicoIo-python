@@ -74,7 +74,11 @@ v1.1.1 Wednesday July 26 -- Hotfix: Add docx module to setup
 
 2018
 v1.1.2 Thursday March 29th -- Explanation visualization + improved error messages
-v1.1.3 Tuesday April 17th -- verify=True
-v1.1.4 Wed May 2nd -- msgpack support
-v1.1.5 Thu May 10th -- change default serializer to msgpack, remove intersections API
-v1.2.0 Thu Oct 25th -- following through on API deprecations, removing relevant tests
+v1.1.3 Tuesday April 17th -- Add argument verify=True to requests call
+v1.1.4 Wed May 2nd -- Msgpack support
+v1.1.5 Thu May 10th -- Change default serializer to msgpack, remove intersections API
+v1.2.0 Thu Oct 25th -- Following through on API deprecations, removing relevant tests
+
+2019
+v1.2.1 Mon June 17th -- Test suite updates
+v1.2.2 Fri July 12th -- URL protocol change
