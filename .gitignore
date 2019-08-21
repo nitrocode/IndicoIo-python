@@ -40,3 +40,8 @@ nosetests.xml
 
 codeship.aes
 .env
+
+venv
+venv27
+
+.pypirc

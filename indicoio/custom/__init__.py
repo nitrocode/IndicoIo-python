@@ -1,1 +1,7 @@
-from .custom import Collection, collections, vectorize, visualize_explanation
+from .custom import (
+    FinetuneCollection,
+    Collection,
+    collections,
+    vectorize,
+    visualize_explanation,
+)

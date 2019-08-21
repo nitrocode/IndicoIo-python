@@ -564,3 +564,62 @@ def vectorize(data, cloud=None, api_key=None, version=None, **kwargs):
         "method": "vectorize",
     }
     return api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+
+
+class FinetuneCollection(Collection):
+    def __init__(self, collection, **kwargs):
+        self.keywords = {
+            "shared": kwargs.get("shared"),
+            "collection_name": collection,
+            "job_options": {"job": True},
+        }
+        self.keywords.update(kwargs)
+
+    def add_data(self, *args, **kwargs):
+        raise NotImplementedError("Add Data not supported yet.")
+
+    def train(self, *args, **kwargs):
+        raise NotImplementedError("Train not supported yet.")
+
+    def clear(self, *args, **kwargs):
+        raise NotImplementedError("Clear not supported yet.")
+
+    def explain(self, *args, **kwargs):
+        raise NotImplementedError("Explain not supported yet.")
+
+    def remove_example(self, *args, **kwargs):
+        raise NotImplementedError("Remove Example not supported yet.")
+
+    def rename(self, *args, **kwargs):
+        raise NotImplementedError("Rename not supported yet.")
+
+    def authorize(self, *args, **kwargs):
+        return super().authorize(*args, **kwargs)
+
+    def deauthorize(self, *args, **kwargs):
+        return super().deauthorize(*args, **kwargs)
+
+    def register(self, *args, **kwargs):
+        return super().register(*args, **kwargs)
+
+    def deregister(self, *args, **kwargs):
+        return super().deregister(*args, **kwargs)
+
+    def info(self, version=2, cloud=None, **kwargs):
+        return self._api_handler(
+            None, cloud=cloud, api="custom", method="info", version=version, **kwargs
+        )
+
+    def predict(self, data, version=2, cloud=None, **kwargs):
+        return self._api_handler(
+            data, cloud=cloud, api="custom", method="predict", version=version, **kwargs
+        )
+
+    def load(self, version=2, cloud=None, **kwargs):
+        info = self.info(version=version, cloud=cloud, **kwargs)
+        if info.get("load_status") == "ready":
+            return info
+
+        return self._api_handler(
+            None, cloud=cloud, api="custom", method="load", version=version, **kwargs
+        )

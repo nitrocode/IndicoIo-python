@@ -26,6 +26,11 @@ def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **k
     """
     pdf = pdf_preprocess(pdf, batch=batch)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
+
+    if version == 2:
+        kwargs["job_options"] = kwargs.get("job_options", {"job": True})
+        kwargs["job_options"]["job"] = True
+
     results = api_handler(
         pdf, cloud=cloud, api="pdfextraction", url_params=url_params, **kwargs
     )

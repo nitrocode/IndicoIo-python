@@ -1,35 +1,69 @@
 """
 Handles making requests to the IndicoApi Server
 """
-import sys
-import json
-import warnings
-from itertools import islice, chain
-import os.path
+from copy import deepcopy
 import datetime
-
-try:
-    from urllib import urlencode
-    from urlparse import urlparse
-except:  # For Python 3:
-    from urllib.parse import urlencode, urlparse
-
+import json
+import os.path
+import sys
+import time
+import warnings
 
 import requests
 import msgpack
 import msgpack_numpy as m
+from indicoio import JSON_HEADERS, config
+from indicoio.utils.encoder import NumpyEncoder
+from indicoio.utils.errors import (
+    APIDoesNotExist,
+    BatchProcessingError,
+    IndicoError,
+    convert_to_py_error,
+)
+
+try:
+    from urllib import urlencode
+    from urlparse import urlparse
+except Exception:  # For Python 3:
+    from urllib.parse import urlencode, urlparse
+
 
 m.patch()
 
-from indicoio.utils.encoder import NumpyEncoder
-from indicoio.utils.errors import (
-    convert_to_py_error,
-    IndicoError,
-    BatchProcessingError,
-    APIDoesNotExist,
-)
-from indicoio import JSON_HEADERS
-from indicoio import config
+
+class JobResult(object):
+    def __init__(self, task_id, block=True, timeout=None, job=True):
+        self.task_id = task_id
+        self.block = block
+        self.timeout = timeout
+
+    def status(self, api_key=None, cloud=None):
+        return api_handler(
+            None,
+            cloud=cloud,
+            api="async",
+            url_params={"method": "{task_id}/status".format(task_id=self.task_id)},
+        )
+
+    def get(self, api_key=None, cloud=None):
+        if self.block:
+            start_time = time.time()
+            while True:
+                status = self.status()
+                if status in {"SUCCESS", "FAILURE", "REVOKED"}:
+                    break
+
+                if self.timeout and time.time() - start_time > self.timeout:
+                    raise IndicoError(
+                        "JobResult didn't finish in provided timeout {timeout}".format(
+                            timeout=self.timeout
+                        )
+                    )
+                time.sleep(2)
+
+        return api_handler(
+            None, cloud=cloud, api="async", url_params={"method": self.task_id}
+        )
 
 
 def convert(data):
@@ -65,12 +99,17 @@ def standardize_input_data(data):
     return data
 
 
-def api_handler(input_data, cloud, api, url_params=None, batch_size=None, **kwargs):
+def api_handler(
+    input_data, cloud, api, url_params=None, batch_size=None, job_options=None, **kwargs
+):
     """
     Sends finalized request data to ML server and receives response.
     If a batch_size is specified, breaks down a request into smaller
     component requests and aggregates the results.
     """
+    job_options = deepcopy(job_options or {})
+    kwargs["job"] = job = job_options.pop("job", False)
+
     url_params = url_params or {}
     input_data = standardize_input_data(input_data)
 
@@ -83,10 +122,21 @@ def api_handler(input_data, cloud, api, url_params=None, batch_size=None, **kwar
     headers = dict(JSON_HEADERS)
     headers["X-ApiKey"] = url_params.get("api_key") or config.api_key
     url = create_url(url_protocol, host, api, dict(kwargs, **url_params))
-    return collect_api_results(input_data, url, headers, api, batch_size, kwargs)
+    return collect_api_results(
+        input_data,
+        url,
+        headers,
+        api,
+        batch_size,
+        kwargs,
+        job=job,
+        job_options=job_options,
+    )
 
 
-def collect_api_results(input_data, url, headers, api, batch_size, kwargs):
+def collect_api_results(
+    input_data, url, headers, api, batch_size, kwargs, job=False, job_options=None
+):
     """
     Optionally split up a single request into a series of requests
     to ensure timely HTTP responses.
@@ -123,9 +173,16 @@ def collect_api_results(input_data, url, headers, api, batch_size, kwargs):
                         err=e, filename=os.path.abspath(filename)
                     )
                 )
+        if job:
+            results = [JobResult(result, **job_options) for result in results]
+            results = [result.get() for result in results]
         return results
+
     else:
-        return send_request(input_data, api, url, headers, kwargs)
+        result = send_request(input_data, api, url, headers, kwargs)
+        if job:
+            result = JobResult(result, **job_options).get()
+        return result
 
 
 def send_request(input_data, api, url, headers, kwargs):
@@ -145,7 +202,6 @@ def send_request(input_data, api, url, headers, kwargs):
     json_data = json.dumps(data)
 
     response = requests.post(url, data=json_data, headers=headers)
-
     warning = response.headers.get("x-warning")
     if warning:
         warnings.warn(warning)
@@ -164,7 +220,7 @@ def send_request(input_data, api, url, headers, kwargs):
     except (msgpack.exceptions.UnpackException, msgpack.exceptions.ExtraData):
         try:
             json_results = response.json()
-        except:
+        except Exception:
             json_results = {"error": response.text}
 
     if config.PY3:
