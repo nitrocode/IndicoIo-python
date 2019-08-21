@@ -6,7 +6,7 @@ from indicoio.custom import Collection, collections
 import uuid
 
 collection_name = "__test_python_text__{}__".format(str(uuid.uuid4()))
-alternate_name = "__alternate_test_python_text__"
+alternate_name = "__alternate_test_python_text__{}__".format(str(uuid.uuid4()))
 test_data = [
     ['input 1', 'label 1'],
     ['input 11', 'label 1'],
