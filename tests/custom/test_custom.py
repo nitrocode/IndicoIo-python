@@ -3,7 +3,9 @@ import unittest
 from indicoio.utils.errors import IndicoError
 from indicoio.custom import Collection, collections
 
-collection_name = "__test_python_text__"
+import uuid
+
+collection_name = "__test_python_text__{}__".format(str(uuid.uuid4()))
 alternate_name = "__alternate_test_python_text__"
 test_data = [
     ['input 1', 'label 1'],
@@ -16,7 +18,7 @@ test_data = [
     ['input 44', 'label 4']
 ]
 
-image_collection_name = "__test_python_image__"
+image_collection_name = "__test_python_image__{}__".format(str(uuid.uuid4()))
 image_test_data = [
     ["https://i.imgur.com/xUX1rvY.png", "dog"],
     ["https://i.imgur.com/xUX1rvY.png", "dog"],
