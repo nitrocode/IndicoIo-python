@@ -45,3 +45,5 @@ venv
 venv27
 
 .pypirc
+
+.eggs
