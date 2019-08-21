@@ -1,6 +1,7 @@
 from ..utils.api import api_handler
 from ..utils.decorators import detect_batch_decorator
 
+
 @detect_batch_decorator
 def places(text, cloud=None, batch=None, api_key=None, version=2, **kwargs):
     """

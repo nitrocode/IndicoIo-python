@@ -2,6 +2,7 @@ import unittest
 
 from indicoio import config, fer
 
+
 class TestBatchSize(unittest.TestCase):
     def setUp(self):
         self.api_key = config.api_key

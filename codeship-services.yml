@@ -3,12 +3,17 @@ python2:
     dockerfile: Py2.Dockerfile
   container_name: indicoio-python2
   encrypted_env_file: codeship.env
+  default_cache_branch: "development"
+  cached: true
   volumes:
     - .:/indicoio-python
+
 python3:
   build:
     dockerfile: Py3.Dockerfile
   container_name: indicoio-python3
+  default_cache_branch: "development"
+  cached: true
   encrypted_env_file: codeship.env
   volumes:
     - .:/indicoio-python

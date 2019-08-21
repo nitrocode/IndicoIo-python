@@ -11,5 +11,5 @@ IMAGE_APIS = {
     "facial_localization": facial_localization,
     "fer": fer,
     "image_features": image_features,
-    "image_recognition": image_recognition
+    "image_recognition": image_recognition,
 }

@@ -28,8 +28,8 @@ def fer(image, cloud=None, batch=False, api_key=None, version=None, **kwargs):
     :rtype: Dictionary containing emotion probability pairs
     """
 
-    image = data_preprocess(image, batch=batch,
-        size=None if kwargs.get("detect") else (48, 48)
+    image = data_preprocess(
+        image, batch=batch, size=None if kwargs.get("detect") else (48, 48)
     )
 
     url_params = {"batch": batch, "api_key": api_key, "version": version}

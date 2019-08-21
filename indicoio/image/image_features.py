@@ -2,6 +2,7 @@ from ..utils.preprocessing import data_preprocess
 from ..utils.api import api_handler
 from ..utils.decorators import detect_batch_decorator
 
+
 @detect_batch_decorator
 def image_features(image, cloud=None, batch=False, api_key=None, version=3, **kwargs):
     """
@@ -35,4 +36,6 @@ def image_features(image, cloud=None, batch=False, api_key=None, version=3, **kw
     """
     image = data_preprocess(image, batch=batch, size=512, min_axis=True)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(image, cloud=cloud, api="imagefeatures", url_params=url_params, **kwargs)
+    return api_handler(
+        image, cloud=cloud, api="imagefeatures", url_params=url_params, **kwargs
+    )

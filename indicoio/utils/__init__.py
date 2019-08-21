@@ -6,10 +6,12 @@ from six import string_types
 
 from indicoio.utils.errors import DataStructureException
 
+
 class TypeCheck(object):
     """
     Decorator that performs a typecheck on the input to a function
     """
+
     def __init__(self, accepted_structures, arg_name):
         """
         When initialized, include list of accepted datatypes and the
@@ -25,13 +27,11 @@ class TypeCheck(object):
             full_args = dict(arg_dict.items() + kwargs.items())
             if not self.is_accepted(full_args[self.arg_name]):
                 raise DataStructureException(
-                    fn,
-                    full_args[self.arg_name],
-                    self.accepted_structures
+                    fn, full_args[self.arg_name], self.accepted_structures
                 )
             return fn(*args, **kwargs)
-        return check_args
 
+        return check_args
 
 
 def is_url(data, batch=False):

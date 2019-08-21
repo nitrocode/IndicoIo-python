@@ -4,7 +4,9 @@ from ..utils.decorators import detect_batch_decorator
 
 
 @detect_batch_decorator
-def facial_localization(image, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+def facial_localization(
+    image, cloud=None, batch=False, api_key=None, version=None, **kwargs
+):
     """
     Given an image, returns a list of faces found within the image.
     For each face, we return a dictionary containing the upper left corner and lower right corner.
@@ -28,4 +30,6 @@ def facial_localization(image, cloud=None, batch=False, api_key=None, version=No
     """
     image = data_preprocess(image, batch=batch)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(image, cloud=cloud, api="faciallocalization", url_params=url_params, **kwargs)
+    return api_handler(
+        image, cloud=cloud, api="faciallocalization", url_params=url_params, **kwargs
+    )

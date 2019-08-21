@@ -6,6 +6,7 @@ from six import StringIO
 from indicoio.config import Settings
 from indicoio import config
 
+
 class TestConfigureEnv(unittest.TestCase):
     """
     Ensure that environment variables are handled by the `Settings` parser
@@ -45,7 +46,10 @@ class TestConfigurationFile(unittest.TestCase):
 
         [private_cloud]
         cloud = %s
-        """ % (self.api_key, self.cloud)
+        """ % (
+            self.api_key,
+            self.cloud,
+        )
 
         config_file = StringIO(textwrap.dedent(config))
         self.settings = Settings(files=[config_file])
@@ -81,12 +85,15 @@ class TestPrecedence(unittest.TestCase):
 
         [private_cloud]
         cloud = %s
-        """ % (self.file_api_key, self.file_cloud)
+        """ % (
+            self.file_api_key,
+            self.file_cloud,
+        )
 
         config_file = StringIO(textwrap.dedent(config))
         os.environ = {
-            'INDICO_CLOUD': self.env_cloud,
-            'INDICO_API_KEY': self.env_api_key
+            "INDICO_CLOUD": self.env_cloud,
+            "INDICO_API_KEY": self.env_api_key,
         }
         self.settings = Settings(files=[config_file])
 
@@ -124,7 +131,7 @@ class TestConfigFilePrecedence(unittest.TestCase):
         cloud = %s
         """ % (
             self.high_priority_api_key,
-            self.high_priority_cloud
+            self.high_priority_cloud,
         )
 
         low_priority_config = """
@@ -135,17 +142,16 @@ class TestConfigFilePrecedence(unittest.TestCase):
         cloud = %s
         """ % (
             self.low_priority_api_key,
-            self.low_priority_cloud
+            self.low_priority_cloud,
         )
 
         high_priority_config_file = StringIO(textwrap.dedent(high_priority_config))
         low_priority_config_file = StringIO(textwrap.dedent(low_priority_config))
 
         os.environ = {}
-        self.settings = Settings(files=[
-            low_priority_config_file,
-            high_priority_config_file
-        ])
+        self.settings = Settings(
+            files=[low_priority_config_file, high_priority_config_file]
+        )
 
     def test_cloud_config_file_priority(self):
         """

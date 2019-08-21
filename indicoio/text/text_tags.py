@@ -25,4 +25,6 @@ def text_tags(text, cloud=None, batch=False, api_key=None, version=None, **kwarg
     :rtype: Dictionary of class probability pairs
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(text, cloud=cloud, api="texttags", url_params=url_params, **kwargs)
+    return api_handler(
+        text, cloud=cloud, api="texttags", url_params=url_params, **kwargs
+    )

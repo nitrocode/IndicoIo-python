@@ -2,13 +2,13 @@ from functools import wraps, partial
 import warnings
 
 
-Version, version, __version__, VERSION = ('1.2.2',) * 4
+Version, version, __version__, VERSION = ("1.3.0",) * 4
 
 JSON_HEADERS = {
-    'Content-type': 'application/json',
-    'Accept': 'application/json',
-    'client-lib': 'python',
-    'version-number': VERSION
+    "Content-type": "application/json",
+    "Accept": "application/json",
+    "client-lib": "python",
+    "version-number": VERSION,
 }
 
 from .text import *
@@ -23,5 +23,5 @@ from indicoio.utils.errors import (
     MissingAPIKey,
     MalformattedData,
     BatchProcessingError,
-    APIDoesNotExist
+    APIDoesNotExist,
 )

@@ -23,4 +23,6 @@ def personality(text, cloud=None, batch=False, api_key=None, version=None, **kwa
     'Openness', and 'Agreeableness' score (a float between 0 and 1) in a dictionary.
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    return api_handler(text, cloud=cloud, api="personality", url_params=url_params, **kwargs)
+    return api_handler(
+        text, cloud=cloud, api="personality", url_params=url_params, **kwargs
+    )

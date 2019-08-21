@@ -5,8 +5,8 @@ import os
 from indicoio import image_features, IndicoError
 from .indico_image_base import ImageTest, DIR
 
-class ImageFeaturesTest(ImageTest):
 
+class ImageFeaturesTest(ImageTest):
     def test_image_features_greyscale(self):
         np = self._require_numpy()
         test_image = os.path.normpath(os.path.join(DIR, "data/48by48.png"))
@@ -41,7 +41,7 @@ class ImageFeaturesTest(ImageTest):
 
     def test_float_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.random(size=(48,48))
+        test_image = np.random.random(size=(48, 48))
         response = image_features(test_image)
 
         self.assertTrue(isinstance(response, list))
@@ -50,7 +50,7 @@ class ImageFeaturesTest(ImageTest):
 
     def test_float_RGB_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.random(size=(48,48,3))
+        test_image = np.random.random(size=(48, 48, 3))
         response = image_features(test_image)
 
         self.assertTrue(isinstance(response, list))
@@ -59,7 +59,7 @@ class ImageFeaturesTest(ImageTest):
 
     def test_float_RGBA_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.random(size=(48,48,4))
+        test_image = np.random.random(size=(48, 48, 4))
         response = image_features(test_image)
 
         self.assertTrue(isinstance(response, list))
@@ -68,7 +68,7 @@ class ImageFeaturesTest(ImageTest):
 
     def test_int_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.randint(0, 255, size=(48,48))
+        test_image = np.random.randint(0, 255, size=(48, 48))
         response = image_features(test_image)
 
         self.assertTrue(isinstance(response, list))
@@ -77,7 +77,7 @@ class ImageFeaturesTest(ImageTest):
 
     def test_int_RGB_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.randint(0, 255, size=(48,48, 3))
+        test_image = np.random.randint(0, 255, size=(48, 48, 3))
         response = image_features(test_image)
 
         self.assertTrue(isinstance(response, list))
@@ -86,7 +86,7 @@ class ImageFeaturesTest(ImageTest):
 
     def test_int_RGBA_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.randint(0, 255, size=(48,48, 3))
+        test_image = np.random.randint(0, 255, size=(48, 48, 3))
         response = image_features(test_image)
 
         self.assertTrue(isinstance(response, list))
@@ -95,5 +95,5 @@ class ImageFeaturesTest(ImageTest):
 
     def test_invalid_int_numpy_arrays(self):
         np = self._require_numpy()
-        test_image = np.random.randint(255, 300, size=(48,48, 5))
+        test_image = np.random.randint(255, 300, size=(48, 48, 5))
         self.assertRaises(IndicoError, image_features, test_image)

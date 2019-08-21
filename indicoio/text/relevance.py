@@ -3,7 +3,9 @@ from ..utils.decorators import detect_batch_decorator
 
 
 @detect_batch_decorator
-def relevance(data, queries, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+def relevance(
+    data, queries, cloud=None, batch=False, api_key=None, version=None, **kwargs
+):
     """
     Given input text and a list of query terms / phrases, returns how relevant the query is
     to the input text.
@@ -24,6 +26,8 @@ def relevance(data, queries, cloud=None, batch=False, api_key=None, version=None
     :rtype: Dictionary of feature score pairs
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    kwargs['queries'] = queries
-    kwargs['synonyms'] = False
-    return api_handler(data, cloud=cloud, api="relevance", url_params=url_params, **kwargs)
+    kwargs["queries"] = queries
+    kwargs["synonyms"] = False
+    return api_handler(
+        data, cloud=cloud, api="relevance", url_params=url_params, **kwargs
+    )

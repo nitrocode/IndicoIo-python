@@ -23,5 +23,7 @@ def personas(text, cloud=None, batch=False, api_key=None, version=None, **kwargs
     'Openness', and 'Agreeableness' score (a float between 0 and 1) in a dictionary.
     """
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    kwargs['persona'] = True
-    return api_handler(text, cloud=cloud, api="personality", url_params=url_params, **kwargs)
+    kwargs["persona"] = True
+    return api_handler(
+        text, cloud=cloud, api="personality", url_params=url_params, **kwargs
+    )

@@ -82,3 +82,4 @@ v1.2.0 Thu Oct 25th -- Following through on API deprecations, removing relevant 
 2019
 v1.2.1 Mon June 17th -- Test suite updates
 v1.2.2 Fri July 12th -- URL protocol change
+v1.3.0 Wed Aug 21st -- Async job support, bugfixes, test fixes.

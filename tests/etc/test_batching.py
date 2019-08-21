@@ -27,14 +27,17 @@ class TestBatchSize(unittest.TestCase):
         with self.assertRaises(IndicoError):
             sentiment_hq(test_data, batch_size=20)
 
-        files = glob.glob('indico-sentimenthq-*.json')
+        files = glob.glob("indico-sentimenthq-*.json")
         assert len(files)
 
         for filename in files:
-            data = json.load(open(filename, 'r'))
+            data = json.load(open(filename, "r"))
 
-            # first four batches should have returned
-            assert len(data) == 80
-
-            # clean up after ourselves
-            os.remove(filename)
+            try:
+                # first four batches should have returned
+                assert len(data) == 80
+            except Exception as e:
+                raise e
+            finally:
+                # clean up after ourselves
+                os.remove(filename)

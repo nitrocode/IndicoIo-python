@@ -2,6 +2,7 @@ from ..utils.pdf import pdf_preprocess, postprocess_images
 from ..utils.api import api_handler
 from ..utils.decorators import detect_batch_decorator
 
+
 @detect_batch_decorator
 def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **kwargs):
     """
@@ -25,11 +26,18 @@ def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **k
     """
     pdf = pdf_preprocess(pdf, batch=batch)
     url_params = {"batch": batch, "api_key": api_key, "version": version}
-    results = api_handler(pdf, cloud=cloud, api="pdfextraction", url_params=url_params, **kwargs)
+
+    if version == 2:
+        kwargs["job_options"] = kwargs.get("job_options", {"job": True})
+        kwargs["job_options"]["job"] = True
+
+    results = api_handler(
+        pdf, cloud=cloud, api="pdfextraction", url_params=url_params, **kwargs
+    )
 
     if batch:
         for result in results:
             result["images"] = postprocess_images(result.get("images", []))
     else:
-        results['images'] = postprocess_images(results.get("images", []))
+        results["images"] = postprocess_images(results.get("images", []))
     return results

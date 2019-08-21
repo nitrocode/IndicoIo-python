@@ -23,24 +23,31 @@ def _unpack_list(example):
         )
 
 
-def _unpack_dict(example):
+def _unpack_dict(example, target=None):
     """
     Input data format standardization
     """
-    try:
-        x = example['data']
-        y = example['target']
-        meta = example.get('metadata', {})
+    if target is None:
+        try:
+            x = example["data"]
+            y = example["target"]
+            meta = example.get("metadata", {})
+            return x, y, meta
+        except KeyError:
+            raise IndicoError(
+                "Invalid input data.  Please ensure input data is "
+                "formatted as a list of dicts with `data` and `target` keys. "
+                "A `metadata` key may optionally be included."
+            )
+    else:
+        # multi-field input
+        y = example.pop(target, None)
+        x = example
+        meta = {}
         return x, y, meta
-    except KeyError:
-        raise IndicoError(
-            "Invalid input data.  Please ensure input data is "
-            "formatted as a list of dicts with `data` and `target` keys. "
-            "A `metadata` key may optionally be included."
-        )
 
 
-def _unpack_data(data):
+def _unpack_data(data, target=None):
     """
     Break Xs, Ys, and metadata out into separate lists for data preprocessing.
     Run basic data validation.
@@ -52,30 +59,33 @@ def _unpack_data(data):
         if isinstance(example, (list, tuple)):
             xs[idx], ys[idx], metadata[idx] = _unpack_list(example)
         if isinstance(example, dict):
-            xs[idx], ys[idx], metadata[idx] = _unpack_dict(example)
+            xs[idx], ys[idx], metadata[idx] = _unpack_dict(example, target=target)
 
     return xs, ys, metadata
 
 
-def _pack_data(X, Y, metadata):
+def _pack_data(X, Y, metadata, target=None):
     """
     After modifying / preprocessing inputs,
     reformat the data in preparation for JSON serialization
     """
-    if not any(metadata):
-        # legacy list of list format is acceptable
-        return list(zip(X, Y))
+    if target is None:
+        if not any(metadata):
+            # legacy list of list format is acceptable
+            return list(zip(X, Y))
 
-    else:
-        # newer dictionary-based format is required in order to save metadata
+        else:
+            # newer dictionary-based format is required in order to save metadata
             return [
-                {
-                    'data': x,
-                    'target': y,
-                    'metadata': meta
-                }
+                {"data": x, "target": y, "metadata": meta}
                 for x, y, meta in zip(X, Y, metadata)
             ]
+    else:
+        # multi-field input
+        for i in range(len(X)):
+            assert isinstance(X[i], dict)
+            X[i][target] = Y[i]
+        return X
 
 
 def visualize_explanation(explanation, label=None):
@@ -83,18 +93,20 @@ def visualize_explanation(explanation, label=None):
     Given the output of the explain() endpoint, produces a terminal visual that plots response strength over a sequence
     """
     if not sys.version_info[:2] >= (3, 5):
-      raise IndicoError("Python >= 3.5+ is required for explanation visualization")
+        raise IndicoError("Python >= 3.5+ is required for explanation visualization")
 
     try:
-      from colr import Colr as C
+        from colr import Colr as C
     except ImportError:
-      raise IndicoError("Package colr >= 0.8.1 is required for explanation visualization.")
+        raise IndicoError(
+            "Package colr >= 0.8.1 is required for explanation visualization."
+        )
 
     cursor = 0
-    text = explanation['text']
-    for token in explanation.get('token_predictions'):
+    text = explanation["text"]
+    for token in explanation.get("token_predictions"):
         try:
-            class_confidence = token.get('prediction')[label]
+            class_confidence = token.get("prediction")[label]
         except KeyError:
             raise IndicoError("Invalid label: {}".format(label))
 
@@ -103,27 +115,26 @@ def visualize_explanation(explanation, label=None):
         else:
             fg_color = (0, 0, 0)
         rg_value = 255 - int(class_confidence * 255)
-        token_end = token.get('token').get('end')
+        token_end = token.get("token").get("end")
         token_text = text[cursor:token_end]
         cursor = token_end
         sys.stdout.write(
-          str(C().b_rgb(
-            rg_value, rg_value, 255
-          ).rgb(
-            fg_color[0], fg_color[1], fg_color[2], token_text
-          ))
+            str(
+                C()
+                .b_rgb(rg_value, rg_value, 255)
+                .rgb(fg_color[0], fg_color[1], fg_color[2], token_text)
+            )
         )
     sys.stdout.write("\n")
     sys.stdout.flush()
 
 
 class Collection(object):
-
     def __init__(self, collection, *args, **kwargs):
         self.keywords = {
-          'domain': kwargs.get('domain'),
-          'shared': kwargs.get('shared'),
-          'collection': collection
+            "domain": kwargs.get("domain"),
+            "shared": kwargs.get("shared"),
+            "collection": collection,
         }
 
     def _api_handler(self, *args, **kwargs):
@@ -135,7 +146,9 @@ class Collection(object):
         keyword_arguments.update(kwargs)
         return api_handler(*args, **keyword_arguments)
 
-    def add_data(self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+    def add_data(
+        self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs
+    ):
         """
         This is the basic training endpoint. Given a piece of text and a score, either categorical
         or numeric, this endpoint will train a new model given the additional piece of information.
@@ -158,23 +171,31 @@ class Collection(object):
           to the appropriate destination.
         """
         if not len(data):
-          raise IndicoError("No input data provided.")
+            raise IndicoError("No input data provided.")
         batch = isinstance(data[0], (list, tuple, dict))
 
         # standarize format for preprocessing batch of examples
         if not batch:
-          data = [data]
+            data = [data]
 
-        X, Y, metadata = _unpack_data(data)
+        target = kwargs.get("target")
+        X, Y, metadata = _unpack_data(data, target=target)
         X = data_preprocess(X, batch=True)
-        data = _pack_data(X, Y, metadata)
+        data = _pack_data(X, Y, metadata, target=target)
 
         # if a single example was passed in, unpack
         if not batch:
-          data = data[0]
+            data = data[0]
 
-        url_params = {"batch": batch, "api_key": api_key, "version": version, 'method': "add_data"}
-        return self._api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": batch,
+            "api_key": api_key,
+            "version": version,
+            "method": "add_data",
+        }
+        return self._api_handler(
+            data, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
     def train(self, cloud=None, batch=False, api_key=None, version=None, **kwargs):
         """
@@ -188,10 +209,23 @@ class Collection(object):
           elsewhere. This allows the API to recognize a request as yours and automatically route it
           to the appropriate destination.
         """
-        url_params = {"batch": batch, "api_key": api_key, "version": version, 'method': "train"}
-        return self._api_handler(self.keywords['collection'], cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": batch,
+            "api_key": api_key,
+            "version": version,
+            "method": "train",
+        }
+        return self._api_handler(
+            self.keywords["collection"],
+            cloud=cloud,
+            api="custom",
+            url_params=url_params,
+            **kwargs
+        )
 
-    def predict(self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+    def predict(
+        self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs
+    ):
         """
         This is the prediction endpoint. This will be the primary interaction point for all predictive
         analysis.
@@ -214,9 +248,13 @@ class Collection(object):
         batch = detect_batch(data)
         data = data_preprocess(data, batch=batch)
         url_params = {"batch": batch, "api_key": api_key, "version": version}
-        return self._api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        return self._api_handler(
+            data, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
-    def explain(self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+    def explain(
+        self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs
+    ):
         """
         This is the explain endpoint. This allows for predictions that also include information
         about the training data that led to the models decision.
@@ -238,8 +276,15 @@ class Collection(object):
         """
         batch = detect_batch(data)
         data = data_preprocess(data, batch=batch)
-        url_params = {"batch": batch, "api_key": api_key, "version": version, "method": "explain"}
-        return self._api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": batch,
+            "api_key": api_key,
+            "version": version,
+            "method": "explain",
+        }
+        return self._api_handler(
+            data, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
     def clear(self, cloud=None, api_key=None, version=None, **kwargs):
         """
@@ -256,17 +301,33 @@ class Collection(object):
           elsewhere. This allows the API to recognize a request as yours and automatically route it
           to the appropriate destination.
         """
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "clear_collection"}
-        return self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "clear_collection",
+        }
+        return self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
     def info(self, cloud=None, api_key=None, version=None, **kwargs):
         """
         Return the current state of the model associated with a given collection
         """
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "info"}
-        return self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "info",
+        }
+        return self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
-    def remove_example(self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+    def remove_example(
+        self, data, cloud=None, batch=False, api_key=None, version=None, **kwargs
+    ):
         """
         This is an API made to remove a single instance of training data. This is useful in cases where a
         single instance of content has been modified, but the remaining examples remain valid. For
@@ -285,22 +346,34 @@ class Collection(object):
         """
         batch = detect_batch(data)
         data = data_preprocess(data, batch=batch)
-        url_params = {"batch": batch, "api_key": api_key, "version": version, 'method': 'remove_example'}
-        return self._api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": batch,
+            "api_key": api_key,
+            "version": version,
+            "method": "remove_example",
+        }
+        return self._api_handler(
+            data, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
-    def wait(self, interval=1, **kwargs):
+    def wait(self, interval=1, timeout=None, **kwargs):
         """
         Block until the collection's model is completed training
         """
+        start = time.time()
         while True:
-            status = self.info(**kwargs).get('status')
+            status = self.info(**kwargs).get("status")
+            if timeout and time.time() - start > timeout:
+                break
             if status == "ready":
                 break
             if status != "training":
                 raise IndicoError("Collection status failed with: {0}".format(status))
             time.sleep(interval)
 
-    def register(self, make_public=False, cloud=None, api_key=None, version=None, **kwargs):
+    def register(
+        self, make_public=False, cloud=None, api_key=None, version=None, **kwargs
+    ):
         """
         This API endpoint allows you to register you collection in order to share read or write
         access to the collection with another user.
@@ -314,9 +387,16 @@ class Collection(object):
           to the appropriate destination.
         make_public (optional) - Boolean: When True, this option gives all indico users read access to your model.
         """
-        kwargs['make_public'] = make_public
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "register"}
-        return self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        kwargs["make_public"] = make_public
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "register",
+        }
+        return self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
     def deregister(self, cloud=None, api_key=None, version=None, **kwargs):
         """
@@ -331,10 +411,25 @@ class Collection(object):
           elsewhere. This allows the API to recognize a request as yours and automatically route it
           to the appropriate destination.
         """
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "deregister"}
-        return self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "deregister",
+        }
+        return self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
-    def authorize(self, email, permission_type='read', cloud=None, api_key=None, version=None, **kwargs):
+    def authorize(
+        self,
+        email,
+        permission_type="read",
+        cloud=None,
+        api_key=None,
+        version=None,
+        **kwargs
+    ):
         """
         This API endpoint allows you to authorize another user to access your model in a read or write capacity.
         Before calling authorize, you must first make sure your model has been registered.
@@ -350,10 +445,17 @@ class Collection(object):
           elsewhere. This allows the API to recognize a request as yours and automatically route it
           to the appropriate destination.
         """
-        kwargs['permission_type'] = permission_type
-        kwargs['email'] = email
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "authorize"}
-        return self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        kwargs["permission_type"] = permission_type
+        kwargs["email"] = email
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "authorize",
+        }
+        return self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
     def deauthorize(self, email, cloud=None, api_key=None, version=None, **kwargs):
         """
@@ -368,9 +470,16 @@ class Collection(object):
           elsewhere. This allows the API to recognize a request as yours and automatically route it
           to the appropriate destination.
         """
-        kwargs['email'] = email
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "deauthorize"}
-        return self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+        kwargs["email"] = email
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "deauthorize",
+        }
+        return self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
 
     def rename(self, name, cloud=None, api_key=None, version=None, **kwargs):
         """
@@ -386,10 +495,17 @@ class Collection(object):
           elsewhere. This allows the API to recognize a request as yours and automatically route it
           to the appropriate destination.
         """
-        kwargs['name'] = name
-        url_params = {"batch": False, "api_key": api_key, "version": version, "method": "rename"}
-        result = self._api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
-        self.keywords['collection'] = name
+        kwargs["name"] = name
+        url_params = {
+            "batch": False,
+            "api_key": api_key,
+            "version": version,
+            "method": "rename",
+        }
+        result = self._api_handler(
+            None, cloud=cloud, api="custom", url_params=url_params, **kwargs
+        )
+        self.keywords["collection"] = name
         return result
 
 
@@ -426,7 +542,12 @@ def collections(cloud=None, api_key=None, version=None, **kwargs):
         }
       }
     """
-    url_params = {"batch": False, "api_key": api_key, "version": version, "method": "collections"}
+    url_params = {
+        "batch": False,
+        "api_key": api_key,
+        "version": version,
+        "method": "collections",
+    }
     return api_handler(None, cloud=cloud, api="custom", url_params=url_params, **kwargs)
 
 
@@ -436,5 +557,69 @@ def vectorize(data, cloud=None, api_key=None, version=None, **kwargs):
     """
     batch = detect_batch(data)
     data = data_preprocess(data, batch=batch)
-    url_params = {"batch": batch, "api_key": api_key, "version": version, "method": "vectorize"}
+    url_params = {
+        "batch": batch,
+        "api_key": api_key,
+        "version": version,
+        "method": "vectorize",
+    }
     return api_handler(data, cloud=cloud, api="custom", url_params=url_params, **kwargs)
+
+
+class FinetuneCollection(Collection):
+    def __init__(self, collection, **kwargs):
+        self.keywords = {
+            "shared": kwargs.get("shared"),
+            "collection_name": collection,
+            "job_options": {"job": True},
+        }
+        self.keywords.update(kwargs)
+
+    def add_data(self, *args, **kwargs):
+        raise NotImplementedError("Add Data not supported yet.")
+
+    def train(self, *args, **kwargs):
+        raise NotImplementedError("Train not supported yet.")
+
+    def clear(self, *args, **kwargs):
+        raise NotImplementedError("Clear not supported yet.")
+
+    def explain(self, *args, **kwargs):
+        raise NotImplementedError("Explain not supported yet.")
+
+    def remove_example(self, *args, **kwargs):
+        raise NotImplementedError("Remove Example not supported yet.")
+
+    def rename(self, *args, **kwargs):
+        raise NotImplementedError("Rename not supported yet.")
+
+    def authorize(self, *args, **kwargs):
+        return super().authorize(*args, **kwargs)
+
+    def deauthorize(self, *args, **kwargs):
+        return super().deauthorize(*args, **kwargs)
+
+    def register(self, *args, **kwargs):
+        return super().register(*args, **kwargs)
+
+    def deregister(self, *args, **kwargs):
+        return super().deregister(*args, **kwargs)
+
+    def info(self, version=2, cloud=None, **kwargs):
+        return self._api_handler(
+            None, cloud=cloud, api="custom", method="info", version=version, **kwargs
+        )
+
+    def predict(self, data, version=2, cloud=None, **kwargs):
+        return self._api_handler(
+            data, cloud=cloud, api="custom", method="predict", version=version, **kwargs
+        )
+
+    def load(self, version=2, cloud=None, **kwargs):
+        info = self.info(version=version, cloud=cloud, **kwargs)
+        if info.get("load_status") == "ready":
+            return info
+
+        return self._api_handler(
+            None, cloud=cloud, api="custom", method="load", version=version, **kwargs
+        )
