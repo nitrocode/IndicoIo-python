@@ -85,3 +85,4 @@ v1.2.2 Fri July 12th -- URL protocol change
 v1.3.1 Wed Aug 21st -- Async job support, bugfixes, test fixes.
 v1.3.2 Wed Aug 21st -- move requirements back to setup.py
 v1.3.3 Mon Aug 26th -- update requirements for future compatibility
+v1.3.4 Mon Aut 26th -- version increment
