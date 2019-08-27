@@ -11,7 +11,7 @@ REQUIREMENTS = [
     "msgpack-numpy==0.4.1",
     "Pillow<6.0.0",
     "requests>=2.2.1",
-    "setuptools==36.5.0",
+    "setuptools>=36.5.0",
     "six>=1.3.0",
 ]
 
@@ -30,7 +30,7 @@ except ImportError:
 
 setup(
     name="IndicoIo",
-    version="1.3.4",
+    version="1.3.5",
     packages=[
         "indicoio",
         "indicoio.text",
