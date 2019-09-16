@@ -32,24 +32,34 @@ m.patch()
 
 
 class JobResult(object):
-    def __init__(self, task_id, block=True, timeout=None, job=True):
+    def __init__(
+        self, task_id, api_key=None, user_id=None, block=True, timeout=None, job=True
+    ):
+        self.api_key = api_key
+        self.user_id = user_id
         self.task_id = task_id
         self.block = block
         self.timeout = timeout
 
-    def status(self, api_key=None, cloud=None):
+    def status(self, api_key=None, user_id=None, cloud=None):
+        api_key = api_key or self.api_key
+        user_id = user_id or self.user_id
         return api_handler(
             None,
             cloud=cloud,
             api="async",
-            url_params={"method": "{task_id}/status".format(task_id=self.task_id)},
+            url_params={
+                "method": "{task_id}/status".format(task_id=self.task_id),
+                "api_key": api_key,
+            },
+            user_id=user_id,
         )
 
-    def get(self, api_key=None, cloud=None):
+    def get(self, api_key=None, user_id=None, cloud=None):
         if self.block:
             start_time = time.time()
             while True:
-                status = self.status()
+                status = self.status(api_key=api_key, user_id=user_id)
                 if status in {"SUCCESS", "FAILURE", "REVOKED"}:
                     break
 
@@ -61,8 +71,14 @@ class JobResult(object):
                     )
                 time.sleep(2)
 
+        user_id = user_id or self.user_id
+        api_key = api_key or self.api_key
         return api_handler(
-            None, cloud=cloud, api="async", url_params={"method": self.task_id}
+            None,
+            cloud=cloud,
+            api="async",
+            url_params={"method": self.task_id, "api_key": api_key},
+            user_id=user_id,
         )
 
 
@@ -174,14 +190,27 @@ def collect_api_results(
                     )
                 )
         if job:
-            results = [JobResult(result, **job_options) for result in results]
+            results = [
+                JobResult(
+                    result,
+                    api_key=headers["X-ApiKey"],
+                    user_id=kwargs.get("user_id"),
+                    **job_options
+                )
+                for result in results
+            ]
             results = [result.get() for result in results]
         return results
 
     else:
         result = send_request(input_data, api, url, headers, kwargs)
         if job:
-            result = JobResult(result, **job_options).get()
+            result = JobResult(
+                result,
+                api_key=headers["X-ApiKey"],
+                user_id=kwargs.get("user_id"),
+                **job_options
+            ).get()
         return result
 
 
