@@ -4,7 +4,7 @@ from ..utils.decorators import detect_batch_decorator
 
 
 @detect_batch_decorator
-def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=None, **kwargs):
+def pdf_extraction(pdf, cloud=None, batch=False, api_key=None, version=2, **kwargs):
     """
     Given a pdf, returns the text and metadata associated with the given pdf.
     PDFs may be provided as base64 encoded data or as a filepath.

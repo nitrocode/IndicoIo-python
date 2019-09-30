@@ -24,10 +24,6 @@ class PDFExtractionTestCase(PDFTestCase):
         results = pdf_extraction([PDF])
         assert isinstance(results, list)
 
-    def test_pdf_extraction_v2_batch(self):
-        results = pdf_extraction([PDF], version=2)
-        assert isinstance(results, list)
-
     def test_image_support(self):
         results = pdf_extraction(PDF, images=True)
         assert "text" in results.keys()
