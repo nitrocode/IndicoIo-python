@@ -59,7 +59,11 @@ class JobResult(object):
         if self.block:
             start_time = time.time()
             while True:
-                status = self.status(api_key=api_key, user_id=user_id)
+                try:
+                    status = self.status(api_key=api_key, user_id=user_id)
+                except IndicoError as e:
+                    if "unknown" in e.args[0].lower():
+                        continue
                 if status in {"SUCCESS", "FAILURE", "REVOKED"}:
                     break
 

@@ -134,6 +134,7 @@ class Collection(object):
         self.keywords = {
             "domain": kwargs.get("domain"),
             "shared": kwargs.get("shared"),
+            "job_options": kwargs.get("job_options"),
             "collection": collection,
         }
 
