@@ -50,6 +50,8 @@ Examples
 .. code:: python
 
     >>> from indicoio import political, sentiment, language, text_tags, keywords, fer, facial_features, image_features
+    
+    >>> import indicoio.config
 
     >>> indicoio.config.api_key = "YOUR_API_KEY"
 
@@ -62,7 +64,9 @@ Examples
     >>> sentiment('Really enjoyed the movie.')
     0.8105182526856075
 
-    >>> text_tags("Facebook blog posts about Android tech make better journalism than most news outlets.")
+    >>> test_text = "Facebook blog posts about Android tech make better journalism than most news outlets."
+
+    >>> text_tags(test_text)
 
     >>> text_tags(test_text, threshold=0.1) # return only keys with value > 0.1
     {u'startups_and_entrepreneurship': 0.21888586688354486}
@@ -83,7 +87,7 @@ Examples
     >>> language('Quis custodiet ipsos custodes')
     {u'Swedish': 0.00033330636691921914, u'Lithuanian': 0.007328693814717631, u'Vietnamese': 0.0002686116137658802, u'Romanian': 8.133913804076592e-06, ...}
 
-    >>> keywords("Facebook blog posts about Android tech make better journalism than most news outlets.", top_n=3)
+    >>> keywords(test_text, top_n=3)
     {u'android': 0.10602030910588661,
      u'journalism': 0.13466866170166855,
      u'outlets': 0.13930405357808642}
